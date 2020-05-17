@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const countrySchema = new Schema({
+const citySchema = new Schema({
     name: {
         type: String,
         required: true,
         unique: true
+    },
+    departmentID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
+        required: true
     },
     created_at: {
         type: Date,
@@ -13,4 +18,4 @@ const countrySchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Country', countrySchema);
+module.exports = mongoose.model('City', citySchema);

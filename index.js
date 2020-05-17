@@ -1,23 +1,39 @@
 const express = require('express');
+const { createServer } = require('http');
 const cors = require('cors');
+const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
+const schema = require('./schema/schema');
 const app = express();
-
-// Routes
-const countryRoutes = require('./routes/countries');
+const mongoConnect = require('./db/db');
 
 // Middlewares
-const notFoundHandler = require('./utils/middleware/notFoundHandler');
+// const notFoundHandler = require('./utils/middleware/notFoundHandler');
 
 app.use(express.json());
-app.use(cors());
-
-// Called of Routes
-countryRoutes(app);
+app.use('*', cors());
 
 //Catch 404
-app.use(notFoundHandler);
+// app.use(notFoundHandler);
 
-app.listen(config.appPort, () => {
+const server = new ApolloServer({
+    schema,
+    introspection: true,
+    formatError: (err) => { // Don't give the specific errors to the client.
+        // if (err.message.startsWith("Database Error: ")) {
+        //     return new Error('Internal server error');
+        // }
+
+        // if (err.message.includes("duplicate key")) {
+        return ({ message: err.message, statusCode: err.extensions.exception.code });
+        // }
+    }
+});
+
+server.applyMiddleware({ app });
+
+const httpServer = createServer(app);
+
+httpServer.listen(config.appPort, () => {
     console.log(`Deployed Server in http://localhost:${config.appPort}/`);
 });
