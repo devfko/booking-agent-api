@@ -24,6 +24,7 @@
         "express": "^4.17.1",
         "graphql": "^15.0.0",
         "graphql-date": "^1.0.3",
+        "graphql-iso-date": "^3.6.1",
         "moment": "^2.25.3",
         "mongodb": "^3.5.7",
         "mongoose": "^5.9.13"

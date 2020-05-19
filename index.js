@@ -24,9 +24,15 @@ const server = new ApolloServer({
         //     return new Error('Internal server error');
         // }
 
-        // if (err.message.includes("duplicate key")) {
+        if (err.message.includes("duplicate key")) {
+            return ({ message: 'Duplicate Key Error ' + err.message, statusCode: 409 });
+        }
+
+        if (err.message.includes("ObjectId failed")) {
+            return ({ message: 'ObjectId is not valid ' + err.message, statusCode: 409 });
+        }
+
         return ({ message: err.message, statusCode: err.extensions.exception.code });
-        // }
     }
 });
 

@@ -1,10 +1,16 @@
 const graphql = require('graphql');
 const { ObjectId } = require('mongodb');
+const {
+    GraphQLDate,
+    GraphQLTime,
+    GraphQLDateTime
+} = require('graphql-iso-date');
 
 const modelCountry = require('../models/country');
 const modelDepartment = require('../models/department');
 const modelCity = require('../models/city');
 const modelSchedule = require('../models/schedule');
+const modelCommCategory = require('../models/commercial_category');
 
 const {
     GraphQLObjectType,
@@ -73,6 +79,14 @@ const ScheduleType = new GraphQLObjectType({
     })
 });
 
+const CommercialCategoryType = new GraphQLObjectType({
+    name: 'Commercial_Category',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString }
+    })
+});
+
 module.exports = {
     CountryType,
     modelCountry,
@@ -81,5 +95,7 @@ module.exports = {
     CityType,
     modelCity,
     ScheduleType,
-    modelSchedule
+    modelSchedule,
+    CommercialCategoryType,
+    modelCommCategory
 };

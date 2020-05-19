@@ -1,18 +1,15 @@
 const mongoose = require('mongoose');
-const graphQLDate = require('graphql-date');
 const Schema = mongoose.Schema;
 
 const scheduleSchema = new Schema({
     init_time: {
-        type: Date,
+        type: String,
         default: Date.now,
-        unique: true,
         required: true
     },
     final_time: {
-        type: Date,
+        type: String,
         default: Date.now,
-        unique: true,
         required: true
     },
     created_at: {
@@ -21,4 +18,9 @@ const scheduleSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Schedule', scheduleSchema);
+scheduleSchema.index({
+    init_time: 1,
+    final_time: 1
+}, { unique: true });
+
+module.exports = mongoose.model('Schedules', scheduleSchema);

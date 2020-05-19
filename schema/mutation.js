@@ -22,13 +22,15 @@ const Mutation = new GraphQLObjectType({
                 final_time: { type: new GraphQLNonNull(GraphQLString) },
             },
             async resolve(parent, args) {
-                let t_initial = new Date(moment(args.init_time, 'hh:mm:ss'));
-                let t_final = new Date(moment(args.final_time, 'hh:mm:ss'));
+                let t_initial = moment(args.init_time, 'HH:mm:ss').format('HH:mm:ss');
+                let t_final = moment(args.final_time, 'HH:mm:ss').format('HH:mm:ss');
+                var formats = ["YYYY-MM-DD LT", "YYYY-MM-DD h:mm:ss A", "YYYY-MM-DD HH:mm:ss", "YYYY-MM-DD HH:mm"];
+                // new Date("1970-01-01 " + moment(args.final_time).format('YYYY-MM-DD HH:mm:ss'));
 
-                if (moment(t_initial).isValid() && moment(t_final).isValid()) {
+                if (moment("1970-01-01 " + t_initial, formats, true).isValid() && moment("1970-01-01 " + t_final, formats, true).isValid()) {
                     let schedule = new typeDefs.modelSchedule({
-                        init_time: new Date(t_initial - t_initial.getTimezoneOffset() * 60000),
-                        final_time: new Date(t_final - t_final.getTimezoneOffset() * 60000)
+                        init_time: t_initial,
+                        final_time: t_final
                     });
 
                     return schedule.save();
@@ -76,6 +78,19 @@ const Mutation = new GraphQLObjectType({
                 });
 
                 return city.save();
+            }
+        },
+        addCommercialCategory: {
+            type: typeDefs.CommercialCategoryType,
+            args: {
+                name: { type: GraphQLNonNull(GraphQLString) }
+            },
+            async resolve(parent, args) {
+                let category = new typeDefs.modelCommCategory({
+                    name: args.name
+                });
+
+                return category.save();
             }
         }
     }

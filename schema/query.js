@@ -15,10 +15,24 @@ const {
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
-        schedules: {
-            type: typeDefs.ScheduleType,
+        commercial_category: {
+            type: typeDefs.CommercialCategoryType,
+            args: { id: { type: GraphQLID }, name: { type: GraphQLString } },
             async resolve(parent, args) {
-                return await typeDefs.modelSchedule.find({});
+                return await typeDefs.modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: args.name }] });
+            }
+        },
+        schedule: {
+            type: typeDefs.ScheduleType,
+            args: { id: { type: GraphQLID } },
+            async resolve(parent, args) {
+                return await typeDefs.modelSchedule.findById(args.id);
+            }
+        },
+        schedules: {
+            type: new GraphQLList(typeDefs.ScheduleType),
+            async resolve(parent, args) {
+                return await typeDefs.modelSchedule.find({}).sort({ init_time: 1 });
             }
         },
         city: {
@@ -31,7 +45,7 @@ const RootQuery = new GraphQLObjectType({
         cities: {
             type: new GraphQLList(typeDefs.CityType),
             async resolve(parent, args) {
-                return await typeDefs.modelCity.find({});
+                return await typeDefs.modelCity.find({}).sort({ name: 1 });
             }
         },
         department: {
@@ -44,7 +58,7 @@ const RootQuery = new GraphQLObjectType({
         departments: {
             type: new GraphQLList(typeDefs.DepartmentType),
             async resolve(parent, args) {
-                return await typeDefs.modelDepartment.find({});
+                return await typeDefs.modelDepartment.find({}).sort({ name: 1 });
             }
         },
         country: {
@@ -57,7 +71,7 @@ const RootQuery = new GraphQLObjectType({
         countries: {
             type: new GraphQLList(typeDefs.CountryType),
             async resolve(parent, args) {
-                return await typeDefs.modelCountry.find({});
+                return await typeDefs.modelCountry.find({}).sort({ name: 1 });
             }
         }
     }
