@@ -1,16 +1,13 @@
 const graphql = require('graphql');
-const { ObjectId } = require('mongodb');
-const {
-    GraphQLDate,
-    GraphQLTime,
-    GraphQLDateTime
-} = require('graphql-iso-date');
+const mongoose = require('mongoose');
 
 const modelCountry = require('../models/country');
 const modelDepartment = require('../models/department');
 const modelCity = require('../models/city');
 const modelSchedule = require('../models/schedule');
 const modelCommCategory = require('../models/commercial_category');
+const modelCommEstablishment = require('../models/commercial_Establishment');
+const modelCommSchedule = require('../models/commercial_schedule');
 
 const {
     GraphQLObjectType,
@@ -19,7 +16,8 @@ const {
     GraphQLInt,
     GraphQLSchema,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLBoolean
 } = graphql;
 
 const CountryType = new GraphQLObjectType({
@@ -50,7 +48,7 @@ const DepartmentType = new GraphQLObjectType({
         city: {
             type: new GraphQLList(CityType),
             async resolve(parent, args) {
-                return await modelCity.find({ "departmentID": ObjectId(parent.id) });
+                return await modelCity.find({ "departmentID": new mongoose.Types.ObjectId(parent.id) });
             }
         }
     })
@@ -87,6 +85,110 @@ const CommercialCategoryType = new GraphQLObjectType({
     })
 });
 
+const CommercialEstablishmentType = new GraphQLObjectType({
+    name: 'Commercial_Establishment',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        email: { type: GraphQLString },
+        password: { type: GraphQLString },
+        address: { type: GraphQLString },
+        description: { type: GraphQLString },
+        logo: { type: GraphQLString },
+        phone: { type: GraphQLString },
+        active: { type: GraphQLBoolean },
+        capacity: { type: GraphQLInt },
+        city: {
+            type: CityType,
+            async resolve(parent, args) {
+                return await modelCity.findById(parent.cityID);
+            }
+        },
+        category: {
+            type: CommercialCategoryType,
+            async resolve(parent, args) {
+                return await modelCommCategory.findById(parent.categoryID);
+            }
+        },
+        schedules: {
+            type: new GraphQLList(ScheduleType),
+            async resolve(parent, args) {
+
+                return await modelSchedule.aggregate([{
+                        $lookup: {
+                            from: "commercial_schedules",
+                            localField: "_id",
+                            foreignField: "scheduleID",
+                            as: "schedules"
+                        }
+                    },
+                    { $match: { "schedules.commercialID": new mongoose.Types.ObjectId(parent._id) } },
+                    {
+                        $unwind: {
+                            path: "$schedules",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    { $sort: { "init_time": 1 } },
+                    {
+                        $project: {
+                            _id: 0,
+                            id: "$_id",
+                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
+                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                        }
+                    }
+                ]);
+
+            }
+        }
+    })
+});
+
+const CommercialScheduleType = new GraphQLObjectType({
+    name: 'Commercial_Schedule',
+    fields: () => ({
+        id: { type: GraphQLID },
+        establishment: {
+            type: CommercialEstablishmentType,
+            async resolve(parent, args) {
+                return await modelCommEstablishment.findById(parent.commercialID);
+            }
+        },
+        schedules: {
+            type: new GraphQLList(ScheduleType),
+            async resolve(parent, args) {
+
+                return await modelSchedule.aggregate([{
+                        $lookup: {
+                            from: "commercial_schedules",
+                            localField: "_id",
+                            foreignField: "scheduleID",
+                            as: "schedules"
+                        }
+                    },
+                    { $match: { "schedules.commercialID": new mongoose.Types.ObjectId(parent.commercialID) } },
+                    {
+                        $unwind: {
+                            path: "$schedules",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    { $sort: { "init_time": 1 } },
+                    {
+                        $project: {
+                            _id: 0,
+                            id: "$_id",
+                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
+                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                        }
+                    }
+                ]);
+            }
+        }
+    })
+});
+
 module.exports = {
     CountryType,
     modelCountry,
@@ -97,5 +199,9 @@ module.exports = {
     ScheduleType,
     modelSchedule,
     CommercialCategoryType,
-    modelCommCategory
+    modelCommCategory,
+    CommercialEstablishmentType,
+    modelCommEstablishment,
+    CommercialScheduleType,
+    modelCommSchedule
 };

@@ -4,22 +4,18 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
 const schema = require('./schema/schema');
+const expressPlayGround = require('graphql-playground-middleware-express').default;
 const app = express();
 const mongoConnect = require('./db/db');
-
-// Middlewares
-// const notFoundHandler = require('./utils/middleware/notFoundHandler');
 
 app.use(express.json());
 app.use('*', cors());
 
-//Catch 404
-// app.use(notFoundHandler);
-
 const server = new ApolloServer({
     schema,
     introspection: true,
-    formatError: (err) => { // Don't give the specific errors to the client.
+    formatError: (err) => {
+        // Don't give the specific errors to the client.
         // if (err.message.startsWith("Database Error: ")) {
         //     return new Error('Internal server error');
         // }
@@ -32,11 +28,15 @@ const server = new ApolloServer({
             return ({ message: 'ObjectId is not valid ' + err.message, statusCode: 409 });
         }
 
-        return ({ message: err.message, statusCode: err.extensions.exception.code });
+        return ({ message: err.message, statusCode: 500 });
     }
 });
 
 server.applyMiddleware({ app });
+
+app.get('/', expressPlayGround({
+    endpoint: '/graphql'
+}));
 
 const httpServer = createServer(app);
 

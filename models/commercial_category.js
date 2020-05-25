@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const commCategorySchema = new Schema({
     name: {
         type: String,
-        require: true,
+        trim: true,
+        required: true,
         unique: true
     },
     created_at: {
@@ -13,4 +14,4 @@ const commCategorySchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Commercial_Categories', commCategorySchema);
+module.exports = mongoose.model('Commercial_Category', commCategorySchema);

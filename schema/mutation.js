@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const typeDefs = require('./typeDefs');
 const moment = require('moment');
+const bcrypt = require('bcrypt');
 
 const {
     GraphQLObjectType,
@@ -9,7 +10,8 @@ const {
     GraphQLInt,
     GraphQLSchema,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLBoolean
 } = graphql;
 
 const Mutation = new GraphQLObjectType({
@@ -22,15 +24,14 @@ const Mutation = new GraphQLObjectType({
                 final_time: { type: new GraphQLNonNull(GraphQLString) },
             },
             async resolve(parent, args) {
-                let t_initial = moment(args.init_time, 'HH:mm:ss').format('HH:mm:ss');
-                let t_final = moment(args.final_time, 'HH:mm:ss').format('HH:mm:ss');
-                var formats = ["YYYY-MM-DD LT", "YYYY-MM-DD h:mm:ss A", "YYYY-MM-DD HH:mm:ss", "YYYY-MM-DD HH:mm"];
-                // new Date("1970-01-01 " + moment(args.final_time).format('YYYY-MM-DD HH:mm:ss'));
+                moment.locale('es');
+                let t_initial = new Date(moment('1970-01-01 ' + args.init_time, 'YYYY-MM-DD HH:mm:ss'));
+                let t_final = new Date(moment('1970-01-01 ' + args.final_time, 'YYYY-MM-DD HH:mm:ss'));
 
-                if (moment("1970-01-01 " + t_initial, formats, true).isValid() && moment("1970-01-01 " + t_final, formats, true).isValid()) {
+                if (moment(t_initial).isValid() && moment(t_final).isValid()) {
                     let schedule = new typeDefs.modelSchedule({
-                        init_time: t_initial,
-                        final_time: t_final
+                        init_time: new Date(t_initial - t_initial.getTimezoneOffset() * 60000),
+                        final_time: new Date(t_final - t_final.getTimezoneOffset() * 60000)
                     });
 
                     return schedule.save();
@@ -91,6 +92,49 @@ const Mutation = new GraphQLObjectType({
                 });
 
                 return category.save();
+            }
+        },
+        addCommercialEstablishment: {
+            type: typeDefs.CommercialEstablishmentType,
+            args: {
+                name: { type: GraphQLNonNull(GraphQLString) },
+                email: { type: GraphQLNonNull(GraphQLString) },
+                password: { type: GraphQLNonNull(GraphQLString) },
+                address: { type: GraphQLString },
+                description: { type: GraphQLString },
+                logo: { type: GraphQLString },
+                phone: { type: GraphQLString },
+                active: { type: GraphQLBoolean },
+                capacity: { type: GraphQLInt },
+                cityID: { type: new GraphQLNonNull(GraphQLID) },
+                categoryID: { type: new GraphQLNonNull(GraphQLID) }
+            },
+            async resolve(parent, args) {
+
+                bcrypt.hash(args.password, 12, async(err, hash) => {
+                    if (hash) {
+                        let establishment = new typeDefs.modelCommEstablishment({
+                            ...args,
+                            password: hash
+                        });
+                    }
+                });
+
+                return establishment.save();
+            }
+        },
+        addCommercialSchedule: {
+            type: typeDefs.CommercialScheduleType,
+            args: {
+                commercialID: { type: GraphQLNonNull(GraphQLID) },
+                scheduleID: { type: GraphQLNonNull(GraphQLID) }
+            },
+            async resolve(parent, args) {
+                let schedule = new typeDefs.modelCommSchedule({
+                    ...args
+                });
+
+                return schedule.save();
             }
         }
     }
