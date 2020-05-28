@@ -8,6 +8,7 @@ mongoose.connect(MONGO_URI, {
     useUnifiedTopology: true,
     useCreateIndex: true
 });
+mongoose.connection.on('error', console.error.bind(console, "MongoDB Connection Error : "));
 
 mongoose.connection.once('open', () => {
     console.log('Connection DataBase Successfully!!');

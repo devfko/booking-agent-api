@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { config } = require('../config');
+const mailer = require('../util/mailer/mailer');
+const bcrypt = require('bcrypt');
+const saltRounds = bcrypt.genSaltSync(12);
+const crypto = require('crypto');
 
 const commEstablishmentSchema = new Schema({
     name: {
@@ -64,6 +69,30 @@ const commEstablishmentSchema = new Schema({
         type: Date,
         default: Date.now
     }
+});
+
+commEstablishmentSchema.pre('save', function(next) {
+    if (this.isModified('password')) {
+        this.password = bcrypt.hashSync(this.password, saltRounds);
+    }
+    next();
+});
+
+commEstablishmentSchema.post('save', async function(cb) {
+    const email_destination = this.email;
+    const token = crypto.randomBytes(16).toString('hex');
+
+    config.destEmail = email_destination;
+    config.subjEmail = 'New Account Validation';
+    config.bodyEmail = 'Hola, verifica tu cuenta dando clic en ' + config.appURL + (config.appPort !== '' ? ':' + config.appPort : '') + '/token/confirmation/' + token;
+
+    // console.log('Sending email....');
+    try {
+        await mailer.sendEmail();
+    } catch (err) {
+        cb(err);
+    }
+    // console.log('. . . .Email Sended');
 });
 
 module.exports = mongoose.model('Commercial_Establishment', commEstablishmentSchema);

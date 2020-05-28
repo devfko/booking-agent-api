@@ -11,6 +11,8 @@ const mongoConnect = require('./db/db');
 app.use(express.json());
 app.use('*', cors());
 
+var tokenRouter = require('./util/routes/token');
+
 const server = new ApolloServer({
     schema,
     introspection: true,
@@ -34,6 +36,8 @@ const server = new ApolloServer({
 
 server.applyMiddleware({ app });
 
+app.use('/token', tokenRouter);
+
 app.get('/', expressPlayGround({
     endpoint: '/graphql'
 }));
@@ -43,3 +47,5 @@ const httpServer = createServer(app);
 httpServer.listen(config.appPort, () => {
     console.log(`Deployed Server in http://localhost:${config.appPort}/`);
 });
+
+// TODO: Implementar proceso de subida/modificación de logo del establecimiento

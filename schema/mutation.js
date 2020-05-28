@@ -1,7 +1,6 @@
 const graphql = require('graphql');
 const typeDefs = require('./typeDefs');
 const moment = require('moment');
-const bcrypt = require('bcrypt');
 
 const {
     GraphQLObjectType,
@@ -111,16 +110,15 @@ const Mutation = new GraphQLObjectType({
             },
             async resolve(parent, args) {
 
-                bcrypt.hash(args.password, 12, async(err, hash) => {
-                    if (hash) {
-                        let establishment = new typeDefs.modelCommEstablishment({
-                            ...args,
-                            password: hash
-                        });
-                    }
+                let establishment = new typeDefs.modelCommEstablishment({
+                    ...args
                 });
 
-                return establishment.save();
+                try {
+                    return establishment.save();
+                } catch (err) {
+                    console.log(err);
+                }
             }
         },
         addCommercialSchedule: {
