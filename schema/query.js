@@ -2,6 +2,14 @@ const graphql = require('graphql');
 const typeDefs = require('./typeDefs');
 const mongoose = require('mongoose');
 
+const modelCountry = require('../models/country');
+const modelDepartment = require('../models/department');
+const modelCity = require('../models/city');
+const modelSchedule = require('../models/schedule');
+const modelCommCategory = require('../models/commercial_category');
+const modelCommEstablishment = require('../models/commercial_Establishment');
+const modelCommSchedule = require('../models/commercial_schedule');
+
 const {
     GraphQLObjectType,
     GraphQLString,
@@ -24,7 +32,7 @@ const RootQuery = new GraphQLObjectType({
                 name: { type: GraphQLString, description: 'Campo Opcional # 2' }
             },
             async resolve(parent, args) {
-                return await typeDefs.modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: args.name }] });
+                return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: args.name }] });
             }
         },
         schedule: {
@@ -33,7 +41,7 @@ const RootQuery = new GraphQLObjectType({
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
 
-                return await typeDefs.modelSchedule.aggregate([
+                return await modelSchedule.aggregate([
                     { $match: { "_id": new mongoose.Types.ObjectId(args.id) } },
                     { $sort: { init_time: 1 } },
                     {
@@ -53,7 +61,7 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos todos los horarios de atención parametrizados en la Base',
             async resolve(parent, args) {
 
-                return await typeDefs.modelSchedule.aggregate([{
+                return await modelSchedule.aggregate([{
                         $project: {
                             _id: false,
                             id: '$_id',
@@ -70,7 +78,7 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos los horarios de atención de un establecimiento especifico por ID',
             args: { commercialID: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await typeDefs.modelCommSchedule.findOne({ commercialID: args.commercialID });
+                return await modelCommSchedule.findOne({ commercialID: args.commercialID });
             }
         },
         commercial_establishment: {
@@ -82,7 +90,7 @@ const RootQuery = new GraphQLObjectType({
             },
             async resolve(parent, args) {
                 let likeStr = '.*' + args.name + '.*';
-                return await typeDefs.modelCommEstablishment.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+                return await modelCommEstablishment.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
             }
         },
         commercial_establishments: {
@@ -97,7 +105,7 @@ const RootQuery = new GraphQLObjectType({
                     }
                 };
                 query = (typeof active !== "undefined") ? query : {};
-                return await typeDefs.modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
+                return await modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
             }
         },
         city: {
@@ -105,14 +113,14 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de una Ciudad especifica por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await typeDefs.modelCity.findById(args.id);
+                return await modelCity.findById(args.id);
             }
         },
         cities: {
             type: new GraphQLList(typeDefs.CityType),
             description: 'Obtenemos el listado de las Ciudades parametrizadas en la Base',
             async resolve(parent, args) {
-                return await typeDefs.modelCity.find({}).sort({ name: 1 });
+                return await modelCity.find({}).sort({ name: 1 });
             }
         },
         department: {
@@ -120,14 +128,14 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de un Departamento especifico por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await typeDefs.modelDepartment.findById(args.id);
+                return await modelDepartment.findById(args.id);
             }
         },
         departments: {
             type: new GraphQLList(typeDefs.DepartmentType),
             description: 'Obtenemos el listado de Departamentos parametrizados en la Base',
             async resolve(parent, args) {
-                return await typeDefs.modelDepartment.find({}).sort({ name: 1 });
+                return await modelDepartment.find({}).sort({ name: 1 });
             }
         },
         country: {
@@ -135,14 +143,14 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de un Pais especifico por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await typeDefs.modelCountry.findById(args.id);
+                return await modelCountry.findById(args.id);
             }
         },
         countries: {
             type: new GraphQLList(typeDefs.CountryType),
             description: 'Obtenemos el listado de Piases parametrizados en la Base',
             async resolve(parent, args) {
-                return await typeDefs.modelCountry.find({}).sort({ name: 1 });
+                return await modelCountry.find({}).sort({ name: 1 });
             }
         }
     }

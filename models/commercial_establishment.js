@@ -24,7 +24,7 @@ const commEstablishmentSchema = new Schema({
         type: String,
         trim: true,
         required: true,
-        select: false
+        // select: false
     },
     address: {
         type: String,
@@ -78,21 +78,37 @@ commEstablishmentSchema.pre('save', function(next) {
     next();
 });
 
-commEstablishmentSchema.post('save', async function(cb) {
-    const email_destination = this.email;
-    const token = crypto.randomBytes(16).toString('hex');
+commEstablishmentSchema.pre('findOneAndUpdate', async function(next) {
+    const password = this.getUpdate().$set.password;
+    const docToUpdate = await this.model.findOne(this.getQuery());
 
-    config.destEmail = email_destination;
-    config.subjEmail = 'New Account Validation';
-    config.bodyEmail = 'Hola, verifica tu cuenta dando clic en ' + config.appURL + (config.appPort !== '' ? ':' + config.appPort : '') + '/token/confirmation/' + token;
-
-    // console.log('Sending email....');
-    try {
-        await mailer.sendEmail();
-    } catch (err) {
-        cb(err);
+    // console.log(docToUpdate);
+    if (password != docToUpdate.password) {
+        docToUpdate.password = bcrypt.hashSync(password, saltRounds);
+        // Retornamos el valor encryptado como respuesta
+        this.getUpdate().$set.password = docToUpdate.password;
     }
-    // console.log('. . . .Email Sended');
+    // console.log(docToUpdate.password);
+
+    next();
 });
+
+/* TODO: DESHABILITADO HASTA QUE SE DEFINA EL OBJETIVO */
+// commEstablishmentSchema.post('save', async function(cb) {
+//     const email_destination = this.email;
+//     const token = crypto.randomBytes(16).toString('hex');
+
+//     config.destEmail = email_destination;
+//     config.subjEmail = 'New Account Validation';
+//     config.bodyEmail = 'Hola, verifica tu cuenta dando clic en ' + config.appURL + (config.appPort !== '' ? ':' + config.appPort : '') + '/token/confirmation/' + token;
+
+//     // console.log('Sending email....');
+//     try {
+//         await mailer.sendEmail();
+//     } catch (err) {
+//         cb(err);
+//     }
+//     // console.log('. . . .Email Sended');
+// });
 
 module.exports = mongoose.model('Commercial_Establishment', commEstablishmentSchema);

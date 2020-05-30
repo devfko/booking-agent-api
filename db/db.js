@@ -6,7 +6,8 @@ const MONGO_URI = `mongodb://${config.dbHost}:${config.dbPort}/${config.dbName}`
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true
+    useCreateIndex: true,
+    useFindAndModify: false
 });
 mongoose.connection.on('error', console.error.bind(console, "MongoDB Connection Error : "));
 

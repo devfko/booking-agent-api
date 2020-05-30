@@ -22,6 +22,7 @@ const {
 
 const CountryType = new GraphQLObjectType({
     name: 'Country',
+    description: 'Modelo de Paises',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
@@ -36,6 +37,7 @@ const CountryType = new GraphQLObjectType({
 
 const DepartmentType = new GraphQLObjectType({
     name: 'Department',
+    description: 'Modelo de Departamentos',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
@@ -56,6 +58,7 @@ const DepartmentType = new GraphQLObjectType({
 
 const CityType = new GraphQLObjectType({
     name: 'City',
+    description: 'Modelo de Ciudades',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
@@ -70,6 +73,7 @@ const CityType = new GraphQLObjectType({
 
 const ScheduleType = new GraphQLObjectType({
     name: 'Schedule',
+    description: 'Modelo de Horarios de Atención Estandar',
     fields: () => ({
         id: { type: GraphQLID },
         init_time: { type: GraphQLString },
@@ -79,6 +83,7 @@ const ScheduleType = new GraphQLObjectType({
 
 const CommercialCategoryType = new GraphQLObjectType({
     name: 'Commercial_Category',
+    description: 'Modelo de Categorias de Establecimientos',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString }
@@ -87,6 +92,7 @@ const CommercialCategoryType = new GraphQLObjectType({
 
 const CommercialEstablishmentType = new GraphQLObjectType({
     name: 'Commercial_Establishment',
+    description: 'Modelo de Establecimientos Comerciales',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
@@ -100,18 +106,21 @@ const CommercialEstablishmentType = new GraphQLObjectType({
         capacity: { type: GraphQLInt },
         city: {
             type: CityType,
+            description: 'Objeto del Modelo de Ciudades',
             async resolve(parent, args) {
                 return await modelCity.findById(parent.cityID);
             }
         },
         category: {
             type: CommercialCategoryType,
+            description: 'Objeto del Modelo de Categorias de Establecimientos',
             async resolve(parent, args) {
                 return await modelCommCategory.findById(parent.categoryID);
             }
         },
         schedules: {
             type: new GraphQLList(ScheduleType),
+            description: 'Objeto del Modelo de Horarios de Atención',
             async resolve(parent, args) {
 
                 return await modelSchedule.aggregate([{
@@ -147,16 +156,19 @@ const CommercialEstablishmentType = new GraphQLObjectType({
 
 const CommercialScheduleType = new GraphQLObjectType({
     name: 'Commercial_Schedule',
+    description: 'Modelo de Horarios de Atención por Establecimiento',
     fields: () => ({
         id: { type: GraphQLID },
         establishment: {
             type: CommercialEstablishmentType,
+            description: 'Objeto del Modelo del Establecimiento',
             async resolve(parent, args) {
                 return await modelCommEstablishment.findById(parent.commercialID);
             }
         },
         schedules: {
             type: new GraphQLList(ScheduleType),
+            description: 'Objeto del Modelo de Horarios de Atención',
             async resolve(parent, args) {
 
                 return await modelSchedule.aggregate([{
@@ -191,17 +203,10 @@ const CommercialScheduleType = new GraphQLObjectType({
 
 module.exports = {
     CountryType,
-    modelCountry,
     DepartmentType,
-    modelDepartment,
     CityType,
-    modelCity,
     ScheduleType,
-    modelSchedule,
     CommercialCategoryType,
-    modelCommCategory,
     CommercialEstablishmentType,
-    modelCommEstablishment,
-    CommercialScheduleType,
-    modelCommSchedule
+    CommercialScheduleType
 };
