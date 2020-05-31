@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const uniqueValidator = require('mongoose-unique-validator');
 
 const scheduleSchema = new Schema({
     init_time: {
@@ -16,6 +17,11 @@ const scheduleSchema = new Schema({
         type: Date,
         default: Date.now
     }
+});
+
+scheduleSchema.plugin(uniqueValidator, {
+    code: 409,
+    message: 'La Franja Horario {PATH} ya se encuentra registrada'
 });
 
 scheduleSchema.index({

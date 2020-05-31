@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const uniqueValidator = require('mongoose-unique-validator');
 
 const commScheduleSchema = new Schema({
     commercialID: {
@@ -16,6 +17,11 @@ const commScheduleSchema = new Schema({
         type: Date,
         default: Date.now
     }
+});
+
+commScheduleSchema.plugin(uniqueValidator, {
+    code: 409,
+    message: 'El Rango Horario {PATH} ya se encuentra registrado'
 });
 
 commScheduleSchema.index({

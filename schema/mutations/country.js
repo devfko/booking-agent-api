@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const typeDefs = require('../typeDefs');
 const mongoose = require('mongoose');
+const { validatorHash } = require('../../util/bcrypt');
 
 const {
     GraphQLString,
@@ -13,12 +14,22 @@ const addCountry = {
     name: 'Country',
     type: typeDefs.CountryType,
     description: 'Creación de Paises',
-    args: { name: { type: new GraphQLNonNull(GraphQLString) } },
+    args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        token: { type: new GraphQLNonNull(GraphQLString) }
+    },
     async resolve(parent, args) {
+        const resultToken = await validatorHash(args.token);
+
+        if (!resultToken) {
+            return {};
+        }
+
         let country = new modelCountry({
             name: args.name
         });
         return country.save();
+
     }
 };
 

@@ -3,7 +3,7 @@ const { createServer } = require('http');
 const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
-const schema = require('./schema/schema');
+const schema = require('./schema');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
 const app = express();
 const mongoConnect = require('./db/db');
@@ -17,17 +17,13 @@ const server = new ApolloServer({
     schema,
     introspection: true,
     formatError: (err) => {
-        // Don't give the specific errors to the client.
-        // if (err.message.startsWith("Database Error: ")) {
-        //     return new Error('Internal server error');
-        // }
 
-        if (err.message.includes("duplicate key")) {
-            return ({ message: 'Duplicate Key Error ' + err.message, statusCode: 409 });
+        if (err.message.includes("validation failed")) {
+            return ({ message: err.message, statusCode: 409 });
         }
 
         if (err.message.includes("ObjectId failed")) {
-            return ({ message: 'ObjectId is not valid ' + err.message, statusCode: 409 });
+            return ({ message: 'Clave Primaria no es válida : ' + err.message, statusCode: 409 });
         }
 
         return ({ message: err.message, statusCode: 500 });

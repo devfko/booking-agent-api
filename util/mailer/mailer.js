@@ -1,30 +1,21 @@
 const { config } = require('../../config');
-const nodemailer = require('nodemailer');
+var sgTransport = require('@sendgrid/mail');
 
 module.exports = {
-    sendEmail: function(req, resp) {
+    sendEmail: async function(req, resp, next) {
         let to = config.destEmail;
-        let smtpTransport = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: config.userEmail,
-                pass: config.passEmail
-            }
-        });
-
-        let mailOptions = {
-            from: 'info@faoba.com',
+        sgTransport.setApiKey(config.sendgridAPI);
+        mailConfig = {
             to: to,
+            from: 'info@faoba.com',
             subject: config.subjEmail,
-            html: config.bodyEmail
+            html: config.bodyEmail,
         };
-
-        smtpTransport.sendMail(mailOptions, function(err, resp) {
-            if (err) {
-                console.log(err);
-            } else {
-                resp.redirect('/');
-            }
-        });
+        try {
+            await sgTransport.send(mailConfig);
+        } catch (err) {
+            console.log('Error al enviar email : ' + err);
+            next(err);
+        }
     }
 };

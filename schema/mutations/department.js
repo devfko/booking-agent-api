@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const typeDefs = require('../typeDefs');
 const mongoose = require('mongoose');
+const { validatorHash } = require('../../util/bcrypt');
 
 const {
     GraphQLString,
@@ -18,9 +19,17 @@ const addDepartment = {
         countryID: {
             type: new GraphQLNonNull(GraphQLID),
             description: 'ID del Pais relacionado'
-        }
+        },
+        token: { type: new GraphQLNonNull(GraphQLString) }
     },
     async resolve(parent, args) {
+
+        const resultToken = await validatorHash(args.token);
+
+        if (!resultToken) {
+            return {};
+        }
+
         let department = new modelDepartment({
             name: args.name,
             countryID: args.countryID

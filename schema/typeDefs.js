@@ -31,6 +31,10 @@ const CountryType = new GraphQLObjectType({
             async resolve(parent, args) {
                 return await modelDepartment.find({ countryID: parent.id });
             }
+        },
+        token: {
+            type: GraphQLString,
+            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -52,6 +56,10 @@ const DepartmentType = new GraphQLObjectType({
             async resolve(parent, args) {
                 return await modelCity.find({ "departmentID": new mongoose.Types.ObjectId(parent.id) });
             }
+        },
+        token: {
+            type: GraphQLString,
+            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -67,6 +75,10 @@ const CityType = new GraphQLObjectType({
             async resolve(parent, args) {
                 return await modelDepartment.findById(parent.departmentID);
             }
+        },
+        token: {
+            type: GraphQLString,
+            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -77,7 +89,11 @@ const ScheduleType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         init_time: { type: GraphQLString },
-        final_time: { type: GraphQLString }
+        final_time: { type: GraphQLString },
+        token: {
+            type: GraphQLString,
+            description: 'Token de Autorización de Creación de Parámetros'
+        }
     })
 });
 
@@ -86,7 +102,11 @@ const CommercialCategoryType = new GraphQLObjectType({
     description: 'Modelo de Categorias de Establecimientos',
     fields: () => ({
         id: { type: GraphQLID },
-        name: { type: GraphQLString }
+        name: { type: GraphQLString },
+        token: {
+            type: GraphQLString,
+            description: 'Token de Autorización de Creación de Parámetros'
+        }
     })
 });
 

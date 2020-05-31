@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const uniqueValidator = require('mongoose-unique-validator');
 
 const citySchema = new Schema({
     name: {
@@ -16,6 +17,11 @@ const citySchema = new Schema({
         type: Date,
         default: Date.now
     }
+});
+
+citySchema.plugin(uniqueValidator, {
+    code: 409,
+    message: 'La ciudad {PATH} ya se encuentra registrada'
 });
 
 module.exports = mongoose.model('City', citySchema);
