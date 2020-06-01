@@ -43,6 +43,8 @@ const httpServer = createServer(app);
 
 const PORT = config.appPort || 3000;
 httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log('Server obtained : ' + httpServer.address());
+
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
 
