@@ -6,6 +6,7 @@ const modelDepartment = require('../models/department');
 const modelCity = require('../models/city');
 const modelSchedule = require('../models/schedule');
 const modelCommCategory = require('../models/commercial_category');
+const modelToken = require('../models/token');
 const modelCommEstablishment = require('../models/commercial_Establishment');
 const modelCommSchedule = require('../models/commercial_schedule');
 
