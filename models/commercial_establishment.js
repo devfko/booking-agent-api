@@ -6,7 +6,8 @@ const crypto = require('crypto');
 const { generarHash } = require('../util/bcrypt');
 const uniqueValidator = require('mongoose-unique-validator');
 
-const modelToken = require('./token');
+// const modelToken = require('./token');
+const modelToken = require('../models/token');
 
 const commEstablishmentSchema = new Schema({
     name: {
