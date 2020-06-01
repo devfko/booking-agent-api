@@ -1,11 +1,11 @@
 {
-    "version": 2,
-    "builds": [{ "src": "index.js", "use": "@now/node" }],
-    "routes": [{
-        "src": "^/(.*)",
-        "dest": "/index.js",
-        "methods": [
-            "GET", "POST"
-        ]
-    }]
+    "now": {
+        "name": "booking-agent",
+        "alias": "booking-agent",
+        "type": "npm",
+        "engines": {
+            "node": "12.2.0"
+        },
+        "dotenv": ".env.production"
+    }
 }
