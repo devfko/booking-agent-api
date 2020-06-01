@@ -8,7 +8,7 @@ const { config } = require('./config');
 const schema = require('./schema');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
 const app = express();
-const mongoConnect = require('./db/db');
+// const mongoConnect = require('./db/db');
 
 app.use(express.json());
 app.use('*', cors());
