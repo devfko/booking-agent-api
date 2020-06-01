@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "set NODE_ENV=development && nodemon index.js",
         "start": "npm run build && node index.js",
-        "build": "reservas build",
+        "build": "npm build .",
         "publish": "now --prod"
     },
     "keywords": [],
