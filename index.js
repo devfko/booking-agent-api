@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { createServer } = require('http');
 const cors = require('cors');
+const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
 const schema = require('./schema');
@@ -39,6 +40,10 @@ app.use('/token', tokenRouter);
 app.get('/', expressPlayGround({
     endpoint: '/graphql'
 }));
+
+app.get('*', (req, resp) => {
+    resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
+});
 
 const httpServer = createServer(app);
 
