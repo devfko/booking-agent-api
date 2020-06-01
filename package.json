@@ -6,11 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "set NODE_ENV=development && nodemon index.js",
-        "start": "node index.js",
-        "clean": "rm -rf build && mkdir build",
-        "build-babel": "babel -d ./build ./index -s",
-        "build": "npm run clean && npm run build-babel",
-        "publish": "now --prod"
+        "start": "node index.js"
     },
     "keywords": [],
     "author": "@devfko",
