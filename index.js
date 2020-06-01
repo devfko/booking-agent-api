@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { createServer } = require('http');
 const cors = require('cors');
@@ -41,11 +42,8 @@ app.get('/', expressPlayGround({
 
 const httpServer = createServer(app);
 
-const PORT = config.appPort || 3000;
+const PORT = process.env.URL_PORT || 3000;
 httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log('port : ' + PORT);
-
-    console.log('Server obtained : ' + httpServer.address());
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
