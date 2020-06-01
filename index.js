@@ -42,8 +42,8 @@ app.get('/', expressPlayGround({
 
 const httpServer = createServer(app);
 
-const PORT = process.env.URL_PORT || 3000;
-httpServer.listen(PORT, '0.0.0.0', () => {
+const port = process.env.URL_PORT || 3000;
+httpServer.listen(port, () => {
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
