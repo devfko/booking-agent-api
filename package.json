@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "set NODE_ENV=development && nodemon index.js",
-        "start": "node index.js",
+        "start": "npm run build && node index.js",
         "publish": "now --prod"
     },
     "keywords": [],
