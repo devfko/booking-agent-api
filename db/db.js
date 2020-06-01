@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 const { config } = require('../config');
 
-const MONGO_URI = `mongodb://${config.dbHost}:${config.dbPort}/${config.dbName}`;
+/** Conexión a Production */
+let Mongo_URI = `mongodb+srv://${config.dbUser}:${config.dbPass}@${config.dbHost}/${config.dbName}?retryWrites=true&w=majority`;
 
-mongoose.connect(MONGO_URI, {
+/** Conexión a Development */
+if (!config.envApp) {
+    Mongo_URI = `mongodb://${config.dbHost}:${config.dbPort}/${config.dbName}`;
+}
+
+mongoose.connect(Mongo_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,

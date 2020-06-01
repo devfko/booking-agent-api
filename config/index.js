@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const config = {
+    envApp: process.env.NODE_ENV === 'production',
     appPort: process.env.URL_PORT,
     appURL: process.env.URL_DOMAIN,
     dbHost: process.env.DB_HOST,
