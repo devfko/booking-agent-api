@@ -7,7 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "set NODE_ENV=development && nodemon index.js",
         "start": "npm run build && node index.js",
-        "build": "npm build .",
+        "build-babel": "babel -d ./build ./src -s",
+        "build": "npm run clean && npm run build-babel",
         "publish": "now --prod"
     },
     "keywords": [],
@@ -29,6 +30,7 @@
         "mongoose-unique-validator": "^2.0.3"
     },
     "devDependencies": {
+        "babel-cli": "^6.26.0",
         "nodemon": "^2.0.3"
     }
 }

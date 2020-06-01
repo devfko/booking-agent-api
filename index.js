@@ -16,6 +16,7 @@ var tokenRouter = require('./util/routes/token');
 const server = new ApolloServer({
     schema,
     introspection: true,
+    playground: true,
     formatError: (err) => {
 
         if (err.message.includes("validation failed")) {
