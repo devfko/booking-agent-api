@@ -40,8 +40,8 @@ app.get('/', expressPlayGround({
 
 const httpServer = createServer(app);
 
-httpServer.listen(config.appPort, () => {
-    console.log(`Deployed Server in ${config.appURL}` + (config.appPort != '' ? '/' + config.appPort : ''));
+httpServer.listen((config.appPort ? ':' + config.appPort + '/' : ''), () => {
+    console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
 
 // TODO: Implementar proceso de subida/modificación de logo del establecimiento
