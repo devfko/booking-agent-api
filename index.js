@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { createServer } = require('http');
+const http = require('http');
 const cors = require('cors');
 const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
@@ -12,6 +12,7 @@ const app = express();
 
 app.use(express.json());
 app.use('*', cors());
+app.use(express.static(path.join(__dirname, 'public')));
 
 var tokenRouter = require('./util/routes/token');
 
@@ -45,12 +46,31 @@ app.get('*', (req, resp) => {
     resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
 });
 
+var port = normalizePort(process.env.PORT || process.env.URL_PORT); // '3000'
+app.set('port', port);
+var httpServer = http.createServer(app);
 // const httpServer = createServer(app);
 
-const port = process.env.URL_PORT || 3000;
-app.listen(port, () => {
+// const port = process.env.URL_PORT || 3000;
+httpServer.listen(port, () => {
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
+
+function normalizePort(val) {
+    var port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
 
 // TODO: Implementar proceso de subida/modificación de logo del establecimiento
