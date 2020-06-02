@@ -45,10 +45,10 @@ app.get('*', (req, resp) => {
     resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
 });
 
-const httpServer = createServer(app);
+// const httpServer = createServer(app);
 
 const port = process.env.URL_PORT || 3000;
-httpServer.listen(port, () => {
+app.listen(port, () => {
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
 });
