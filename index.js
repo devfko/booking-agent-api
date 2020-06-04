@@ -46,7 +46,7 @@ app.get('*', (req, resp) => {
     resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
 });
 
-var port = normalizePort(process.env.URL_PORT); // '3000'
+var port = normalizePort(process.env.PORT || process.env.URL_PORT); // '3000'
 app.set('port', port);
 var httpServer = http.createServer(app);
 
