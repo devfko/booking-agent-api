@@ -1,6 +1,8 @@
+// require('dotenv').config();
 const express = require('express');
-const { createServer } = require('http');
+const http = require('http');
 const cors = require('cors');
+const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
 const schema = require('./schema');
@@ -10,12 +12,14 @@ const mongoConnect = require('./db/db');
 
 app.use(express.json());
 app.use('*', cors());
+app.use(express.static(path.join(__dirname, 'public')));
 
 var tokenRouter = require('./util/routes/token');
 
 const server = new ApolloServer({
     schema,
     introspection: true,
+    playground: true,
     formatError: (err) => {
 
         if (err.message.includes("validation failed")) {
@@ -38,10 +42,35 @@ app.get('/', expressPlayGround({
     endpoint: '/graphql'
 }));
 
-const httpServer = createServer(app);
-
-httpServer.listen(config.appPort, () => {
-    console.log(`Deployed Server in ${config.appURL}:${config.appPort}/`);
+app.get('*', (req, resp) => {
+    resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
 });
+
+var port = normalizePort(config.appPort || process.env.URL_PORT); // '3000'
+app.set('port', port);
+var httpServer = http.createServer(app);
+// const httpServer = createServer(app);
+
+// const port = process.env.URL_PORT || 3000;
+httpServer.listen(port, () => {
+
+    console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
+});
+
+function normalizePort(val) {
+    var port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
 
 // TODO: Implementar proceso de subida/modificación de logo del establecimiento
