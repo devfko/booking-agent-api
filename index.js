@@ -49,7 +49,6 @@ app.get('*', (req, resp) => {
 var port = normalizePort(config.appPort || process.env.URL_PORT); // '3000'
 app.set('port', port);
 var httpServer = http.createServer(app);
-// const httpServer = createServer(app);
 
 // const port = process.env.URL_PORT || 3000;
 httpServer.listen(port, () => {
