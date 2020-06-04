@@ -1,4 +1,4 @@
-// require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -46,7 +46,7 @@ app.get('*', (req, resp) => {
     resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
 });
 
-var port = normalizePort(config.appPort || process.env.URL_PORT); // '3000'
+var port = normalizePort(process.env.URL_PORT); // '3000'
 app.set('port', port);
 var httpServer = http.createServer(app);
 
