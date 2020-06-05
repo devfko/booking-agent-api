@@ -7,7 +7,6 @@ const { generarHash } = require('../util/bcrypt');
 const uniqueValidator = require('mongoose-unique-validator');
 
 const modelToken = require('./token');
-// const modelToken = mongoose.model('Token');
 
 const commEstablishmentSchema = new Schema({
     name: {
@@ -80,25 +79,21 @@ commEstablishmentSchema.plugin(uniqueValidator, {
 });
 
 commEstablishmentSchema.pre('save', async function(next) {
-    console.log('una avioneta pasó por aqui....');
     if (this.isModified('password')) {
         this.password = await generarHash(this.password);
     }
     next();
 });
 
-commEstablishmentSchema.pre('update', async function(next) {
+commEstablishmentSchema.pre('findOneAndUpdate', async function(next) {
     const password = this.getUpdate().$set.password;
     const docToUpdate = await this.model.findOne(this.getQuery());
 
-    console.log('....tirando papeletas de que color?');
     if (password != docToUpdate.password) {
         docToUpdate.password = await generarHash(password);
         // Retornamos el valor encryptado como respuesta
         this.getUpdate().$set.password = docToUpdate.password;
     }
-    // console.log(docToUpdate.password);
-
     next();
 });
 

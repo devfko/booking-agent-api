@@ -9,6 +9,7 @@ const modelSchedule = require('../models/schedule');
 const modelCommCategory = require('../models/commercial_category');
 const modelCommEstablishment = require('../models/commercial_establishment');
 const modelCommSchedule = require('../models/commercial_schedule');
+const modelUser = require('../models/user');
 
 const {
     GraphQLObjectType,
@@ -151,6 +152,17 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos el listado de Piases parametrizados en la Base',
             async resolve(parent, args) {
                 return await modelCountry.find({}).sort({ name: 1 });
+            }
+        },
+        user: {
+            type: typeDefs.UserType,
+            description: 'Obtenemos la información de un Usuario especifico por ID o EMAIL',
+            args: {
+                id: { type: GraphQLID, description: 'Campo Opcional # 1' },
+                email: { type: GraphQLString, description: 'Campo Opcional # 2' }
+            },
+            async resolve(parent, args) {
+                return await modelUser.findOne({ $or: [{ _id: args.id }, { email: args.email }] });
             }
         }
     }

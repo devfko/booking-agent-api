@@ -9,6 +9,7 @@ const modelCommCategory = require('../models/commercial_category');
 // const modelToken = require('../models/token');
 const modelCommEstablishment = require('../models/commercial_establishment');
 const modelCommSchedule = require('../models/commercial_schedule');
+const modelUser = require('../models/user');
 
 const {
     GraphQLObjectType,
@@ -222,6 +223,20 @@ const CommercialScheduleType = new GraphQLObjectType({
     })
 });
 
+const UserType = new GraphQLObjectType({
+    name: 'User',
+    description: 'Modelo de Usuarios',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        lastname: { type: GraphQLString },
+        email: { type: GraphQLString },
+        password: { type: GraphQLString },
+        phone: { type: GraphQLString },
+        address: { type: GraphQLString }
+    })
+});
+
 module.exports = {
     CountryType,
     DepartmentType,
@@ -229,5 +244,6 @@ module.exports = {
     ScheduleType,
     CommercialCategoryType,
     CommercialEstablishmentType,
-    CommercialScheduleType
+    CommercialScheduleType,
+    UserType
 };
