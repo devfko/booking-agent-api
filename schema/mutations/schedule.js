@@ -2,6 +2,7 @@ const graphql = require('graphql');
 const typeDefs = require('../typeDefs');
 const moment = require('moment');
 const mongoose = require('mongoose');
+const { validatorHash } = require('../../util/bcrypt');
 
 const {
     GraphQLString,
@@ -17,8 +18,16 @@ const addSchedule = {
     args: {
         init_time: { type: new GraphQLNonNull(GraphQLString) },
         final_time: { type: new GraphQLNonNull(GraphQLString) },
+        token: { type: new GraphQLNonNull(GraphQLString) }
     },
     async resolve(parent, args) {
+
+        const resultToken = await validatorHash(args.token);
+
+        if (!resultToken) {
+            return {};
+        }
+
         moment.locale('es');
         let t_initial = new Date(moment('1970-01-01 ' + args.init_time, 'YYYY-MM-DD HH:mm:ss'));
         let t_final = new Date(moment('1970-01-01 ' + args.final_time, 'YYYY-MM-DD HH:mm:ss'));

@@ -10,6 +10,7 @@ const modelCommCategory = require('../models/commercial_category');
 const modelCommEstablishment = require('../models/commercial_establishment');
 const modelCommSchedule = require('../models/commercial_schedule');
 const modelUser = require('../models/user');
+const modelBooking = require('../models/commercial_booking');
 
 const {
     GraphQLObjectType,
@@ -19,7 +20,8 @@ const {
     GraphQLSchema,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLBoolean
+    GraphQLBoolean,
+    GraphQLFloat
 } = graphql;
 
 const CountryType = new GraphQLObjectType({
@@ -126,6 +128,7 @@ const CommercialEstablishmentType = new GraphQLObjectType({
         phone: { type: GraphQLString },
         active: { type: GraphQLBoolean },
         capacity: { type: GraphQLInt },
+        rating: { type: GraphQLFloat },
         city: {
             type: CityType,
             description: 'Objeto del Modelo de Ciudades',
@@ -237,6 +240,41 @@ const UserType = new GraphQLObjectType({
     })
 });
 
+const CommercialBookingType = new GraphQLObjectType({
+    name: 'Commercial_Booking',
+    description: 'Modelo de Reservas por Establecimiento',
+    fields: () => ({
+        id: { type: GraphQLID },
+        date: { type: GraphQLString },
+        time: { type: GraphQLString },
+        state: { type: GraphQLBoolean },
+        establishment: {
+            type: CommercialEstablishmentType,
+            description: 'Objeto del Modelo del Establecimiento',
+            async resolve(parent, args) {
+                return await modelCommEstablishment.findOne({
+                    $or: [
+                        { "commercialID": parent.establishment },
+                        { "commercialID": parent.commercialID }
+                    ]
+                });
+            }
+        },
+        user: {
+            type: UserType,
+            description: 'Objeto del Modelo de Usuario',
+            async resolve(parent, args) {
+                return await modelUser.findOne({
+                    $or: [
+                        { "userID": parent.user },
+                        { "userID": parent.userID }
+                    ]
+                });
+            }
+        }
+    })
+});
+
 module.exports = {
     CountryType,
     DepartmentType,
@@ -245,5 +283,6 @@ module.exports = {
     CommercialCategoryType,
     CommercialEstablishmentType,
     CommercialScheduleType,
-    UserType
+    UserType,
+    CommercialBookingType
 };

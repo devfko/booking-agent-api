@@ -8,7 +8,9 @@ const { config } = require('./config');
 const schema = require('./schema');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
 const app = express();
-const mongoConnect = require('./db/db');
+const mongoConnection = require('./db/db');
+
+mongoConnection.connection();
 
 app.use(express.json());
 app.use('*', cors());
@@ -53,6 +55,7 @@ var httpServer = http.createServer(app);
 httpServer.listen(port, () => {
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
+
 });
 
 function normalizePort(val) {

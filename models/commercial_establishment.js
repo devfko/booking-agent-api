@@ -5,7 +5,7 @@ const mailer = require('../util/mailer/mailer');
 const crypto = require('crypto');
 const { generarHash } = require('../util/bcrypt');
 const uniqueValidator = require('mongoose-unique-validator');
-
+const Float = require('mongoose-float').loadType(mongoose);
 const modelToken = require('./token');
 
 const commEstablishmentSchema = new Schema({
@@ -31,7 +31,7 @@ const commEstablishmentSchema = new Schema({
     address: {
         type: String,
         trim: true,
-        default: ''
+        required: true
     },
     description: {
         type: String,
@@ -56,6 +56,10 @@ const commEstablishmentSchema = new Schema({
         type: Number,
         required: true,
         default: 4
+    },
+    rating: {
+        type: Float,
+        default: 3.0
     },
     cityID: {
         type: mongoose.Schema.Types.ObjectId,
@@ -97,31 +101,31 @@ commEstablishmentSchema.pre('findOneAndUpdate', async function(next) {
     next();
 });
 
-commEstablishmentSchema.post('save', async function(cb) {
+// commEstablishmentSchema.post('save', async function(cb) {
 
-    if (config.sendgridAPI !== '') {
-        const email_destination = this.email;
-        const token = new modelToken({ commercialID: this.id, token: crypto.randomBytes(16).toString('hex') });
+//     if (config.sendgridAPI !== '') {
+//         const email_destination = this.email;
+//         const token = new modelToken({ commercialID: this.id, token: crypto.randomBytes(16).toString('hex') });
 
-        await token.save(async function(err) {
-            if (err) {
-                return console.log(err.message);
-            }
+//         await token.save(async function(err) {
+//             if (err) {
+//                 return console.log(err.message);
+//             }
 
-            const urlToken = config.appURL + (config.appPort !== '' ? ':' + config.appPort : '') + '/token/confirmation/' + token.token;
-            config.destEmail = email_destination;
-            config.subjEmail = 'New Account Validation';
-            config.bodyEmail = `<p><strong>Hola, por favor verifica tu cuenta dando clic en la imagen para activar tu cuenta</strong></p><br />
-        <p><a title='Account Activation' href='${urlToken}' target="_blank" rel="noopener"><img style="display: block; margin-left: auto; margin-right: auto;" src="https://scontent.fclo7-1.fna.fbcdn.net/v/t1.0-9/20245767_1447449845349395_5492820255884438272_n.png?_nc_cat=102&amp;_nc_sid=85a577&amp;_nc_ohc=RefifhzEjNkAX9L3zbI&amp;_nc_ht=scontent.fclo7-1.fna&amp;oh=6586ce5831c24de08606b50957ec732a&amp;oe=5EFA7312" width="200" height="200" /></a></p><br />`;
+//             const urlToken = config.appURL + (config.appPort !== '' ? ':' + config.appPort : '') + '/token/confirmation/' + token.token;
+//             config.destEmail = email_destination;
+//             config.subjEmail = 'New Account Validation';
+//             config.bodyEmail = `<p><strong>Hola, por favor verifica tu cuenta dando clic en la imagen para activar tu cuenta</strong></p><br />
+//         <p><a title='Account Activation' href='${urlToken}' target="_blank" rel="noopener"><img style="display: block; margin-left: auto; margin-right: auto;" src="https://scontent.fclo7-1.fna.fbcdn.net/v/t1.0-9/20245767_1447449845349395_5492820255884438272_n.png?_nc_cat=102&amp;_nc_sid=85a577&amp;_nc_ohc=RefifhzEjNkAX9L3zbI&amp;_nc_ht=scontent.fclo7-1.fna&amp;oh=6586ce5831c24de08606b50957ec732a&amp;oe=5EFA7312" width="200" height="200" /></a></p><br />`;
 
-            try {
-                await mailer.sendEmail();
-            } catch (errMail) {
-                console.log(errMail);
-                cb();
-            }
-        });
-    }
-});
+//             try {
+//                 await mailer.sendEmail();
+//             } catch (errMail) {
+//                 console.log(errMail);
+//                 cb();
+//             }
+//         });
+//     }
+// });
 
 module.exports = mongoose.model('Commercial_Establishment', commEstablishmentSchema);

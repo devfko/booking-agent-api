@@ -7,7 +7,8 @@ const {
     GraphQLNonNull,
     GraphQLID,
     GraphQLBoolean,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLFloat
 } = graphql;
 
 const modelCommEstablishment = mongoose.model('Commercial_Establishment');
@@ -19,12 +20,13 @@ const addCommercialEstablishment = {
         name: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
-        address: { type: GraphQLString },
+        address: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLString },
         logo: { type: GraphQLString },
         phone: { type: GraphQLString },
         active: { type: GraphQLBoolean },
         capacity: { type: GraphQLInt },
+        rating: { type: GraphQLFloat },
         cityID: {
             type: new GraphQLNonNull(GraphQLID),
             description: 'ID de la Ciudad relacionada'
@@ -56,12 +58,13 @@ const editCommercialEstablishment = {
         name: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
-        address: { type: GraphQLString },
+        address: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLString },
         logo: { type: GraphQLString },
         phone: { type: GraphQLString },
         active: { type: GraphQLBoolean },
         capacity: { type: GraphQLInt },
+        rating: { type: GraphQLFloat },
         cityID: {
             type: new GraphQLNonNull(GraphQLID),
             description: 'ID de la Ciudad relacionada'

@@ -10,6 +10,7 @@ const modelCommCategory = require('../models/commercial_category');
 const modelCommEstablishment = require('../models/commercial_establishment');
 const modelCommSchedule = require('../models/commercial_schedule');
 const modelUser = require('../models/user');
+const modelCommBooking = require('../models/commercial_booking');
 
 const {
     GraphQLObjectType,
@@ -25,6 +26,46 @@ const {
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
+        booking: {
+            // type: new GraphQLList(typeDefs.CommercialBookingType),
+            type: new GraphQLList(typeDefs.CommercialBookingType),
+            description: 'Obtenemos todas las reservas de un establecimiento o Usuario especifico por ID',
+            args: {
+                commercialID: { type: GraphQLID },
+                userID: { type: GraphQLID },
+            },
+            async resolve(parent, args) {
+
+                // return await modelCommBooking.find({
+                //     $or: [
+                //         { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
+                //         { "userID": new mongoose.Types.ObjectId(args.userID) }
+                //     ]
+                // });
+
+                return await modelCommBooking.aggregate([{
+                        $match: {
+                            $or: [
+                                { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
+                                { "userID": new mongoose.Types.ObjectId(args.userID) }
+                            ]
+                        }
+                    },
+                    { $sort: { date: -1, time: 1 } },
+                    {
+                        $project: {
+                            _id: false,
+                            id: '$_id',
+                            date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+                            time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
+                            state: '$state',
+                            user: '$userID',
+                            establishment: '$commercialID'
+                        }
+                    }
+                ]);
+            }
+        },
         commercial_category: {
             type: typeDefs.CommercialCategoryType,
             description: 'Obtenemos la información de una categoria especifica por ID o por name',

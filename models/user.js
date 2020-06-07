@@ -55,7 +55,6 @@ userSchema.pre('save', async function(next) {
 userSchema.pre('findOneAndUpdate', async function(next) {
     const password = this.getUpdate().$set.password;
     const docToUpdate = await this.model.findOne(this.getQuery());
-    console.log('here');
 
     if (password != docToUpdate.password) {
         docToUpdate.password = await generarHash(password);

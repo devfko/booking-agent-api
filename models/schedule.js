@@ -4,12 +4,12 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 const scheduleSchema = new Schema({
     init_time: {
-        type: String,
+        type: Date,
         default: Date.now,
         required: true
     },
     final_time: {
-        type: String,
+        type: Date,
         default: Date.now,
         required: true
     },

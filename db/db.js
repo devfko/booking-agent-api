@@ -9,14 +9,20 @@ if (!config.envApp) {
     Mongo_URI = `mongodb://${config.dbHost}:${config.dbPort}/${config.dbName}`;
 }
 
-mongoose.connect(Mongo_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-});
-mongoose.connection.on('error', console.error.bind(console, "MongoDB Connection Error : "));
+function connection() {
+    mongoose.connect(Mongo_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true,
+        useFindAndModify: false
+    });
+    mongoose.connection.on('error', console.error.bind(console, "MongoDB Connection Error : "));
 
-mongoose.connection.once('open', () => {
-    console.log('Connection DataBase Successfully!!');
-});
+    mongoose.connection.once('open', () => {
+        console.log('Connection DataBase Successfully!!');
+    });
+}
+
+module.exports = {
+    connection
+};
