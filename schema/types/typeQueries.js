@@ -1,16 +1,15 @@
 const graphql = require('graphql');
 const mongoose = require('mongoose');
 
-const modelCountry = require('../models/country');
-const modelDepartment = require('../models/department');
-const modelCity = require('../models/city');
-const modelSchedule = require('../models/schedule');
-const modelCommCategory = require('../models/commercial_category');
-// const modelToken = require('../models/token');
-const modelCommEstablishment = require('../models/commercial_establishment');
-const modelCommSchedule = require('../models/commercial_schedule');
-const modelUser = require('../models/user');
-const modelBooking = require('../models/commercial_booking');
+const modelCountry = require('../../models/country');
+const modelDepartment = require('../../models/department');
+const modelCity = require('../../models/city');
+const modelSchedule = require('../../models/schedule');
+const modelCommCategory = require('../../models/commercial_category');
+const modelCommEstablishment = require('../../models/commercial_establishment');
+const modelCommSchedule = require('../../models/commercial_schedule');
+const modelUser = require('../../models/user');
+const modelBooking = require('../../models/commercial_booking');
 
 const {
     GraphQLObjectType,
@@ -248,6 +247,9 @@ const CommercialBookingType = new GraphQLObjectType({
         date: { type: GraphQLString },
         time: { type: GraphQLString },
         state: { type: GraphQLBoolean },
+        price: { type: GraphQLFloat },
+        quantity: { type: GraphQLInt },
+        voucher: { type: GraphQLString },
         establishment: {
             type: CommercialEstablishmentType,
             description: 'Objeto del Modelo del Establecimiento',

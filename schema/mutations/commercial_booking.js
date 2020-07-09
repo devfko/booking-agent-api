@@ -1,31 +1,21 @@
 const graphql = require('graphql');
-const typeDefs = require('../typeDefs');
+const typeDefs = require('../types/typeQueries');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const { pubsub } = require('../helper');
+const genVoucher = require('../../util/generators/voucher');
 
 const {
     GraphQLString,
     GraphQLNonNull,
     GraphQLID,
     GraphQLBoolean,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLFloat
 } = graphql;
 
 const modelCommBooking = mongoose.model('Commercial_Booking');
-const BOOKING_ADDED_TOPIC = 'newBooking';
-
-const newBooking = {
-    type: typeDefs.CommercialBookingType,
-    // subscribe(parent, args, ctx, info) {
-    // async resolve(parent, args) {
-    //     // async resolve(parent, args) {
-    //     console.log('parent : ' + parent);
-    //     console.log('args : ' + args);
-    //     pubsub.asyncIterator([BOOKING_ADDED_TOPIC]);
-    // }
-    subscribe: () => pubsub.asyncIterator([BOOKING_ADDED_TOPIC]),
-};
+const BOOKING_ADDED_TOPIC = 'BOOKING_ADDED_TOPIC';
 
 const addCommercialBooking = {
     type: typeDefs.CommercialBookingType,
@@ -41,6 +31,8 @@ const addCommercialBooking = {
         },
         date: { type: new GraphQLNonNull(GraphQLString) },
         time: { type: new GraphQLNonNull(GraphQLString) },
+        price: { type: new GraphQLNonNull(GraphQLFloat) },
+        quantity: { type: new GraphQLNonNull(GraphQLInt) }
     },
     async resolve(parent, args) {
         moment.locale('es');
@@ -50,11 +42,20 @@ const addCommercialBooking = {
                 date: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
                 time: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
                 commercialID: args.establishment,
-                userID: args.user
+                userID: args.user,
+                price: args.price,
+                quantity: args.quantity,
+                voucher: await genVoucher("shop")
             });
 
             const operation = await booking.save();
-            pubsub.publish(BOOKING_ADDED_TOPIC, { newBooking: args });
+            await pubsub.publish(BOOKING_ADDED_TOPIC, {
+                newBooking: {
+                    bookingId: operation.id,
+                    state: operation.state,
+                    ...args
+                }
+            });
             return operation;
         } else {
             return modelCommBooking;
@@ -63,4 +64,4 @@ const addCommercialBooking = {
     }
 };
 
-module.exports = { addCommercialBooking, newBooking };
+module.exports = { addCommercialBooking };

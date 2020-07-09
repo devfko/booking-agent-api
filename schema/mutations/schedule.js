@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const typeDefs = require('../typeDefs');
+const typeDefs = require('../types/typeQueries');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const { validatorHash } = require('../../util/bcrypt');

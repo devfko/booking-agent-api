@@ -2,26 +2,24 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { https } = require('http');
 const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
 const { config } = require('./config');
 const schema = require('./schema');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
-const app = express();
+
+// MongoConnection
 const mongoConnection = require('./db/db');
-
 mongoConnection.connection();
-
-app.use(express.json());
-app.use('*', cors());
-app.use(express.static(path.join(__dirname, 'public')));
-
-var tokenRouter = require('./util/routes/token');
 
 const server = new ApolloServer({
     schema,
-    introspection: true,
+    introspection: process.env.NODE_ENV !== 'production',
     playground: true,
+    tracing: true,
     formatError: (err) => {
 
         if (err.message.includes("validation failed")) {
@@ -36,25 +34,38 @@ const server = new ApolloServer({
     }
 });
 
-server.applyMiddleware({ app });
+// Routes
+var tokenRouter = require('./util/routes/token');
 
+const app = express();
+app.use(helmet());
+app.use(express.json());
+
+if (process.env.NODE_ENV === 'production') {
+    app.use(rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+    }));
+}
+
+app.use('*', cors());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/token', tokenRouter);
 
+server.applyMiddleware({ app });
 app.get('/', expressPlayGround({
     endpoint: '/graphql'
 }));
 
-app.get('*', (req, resp) => {
-    resp.sendFile(path.resolve(__dirname, 'public', 'index.js'));
-});
-
 var port = normalizePort(process.env.PORT || process.env.URL_PORT);
 app.set('port', port);
-var httpServer = http.createServer(app);
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
 
 httpServer.listen(port, () => {
 
     console.log(`Deployed Server in ${config.appURL}` + (config.appPort ? ':' + config.appPort + '/' : ''));
+    console.log(`🚀 Subscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`);
 
 });
 

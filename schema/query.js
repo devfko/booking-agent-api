@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const typeDefs = require('./typeDefs');
+const typeDefs = require('./types/typeQueries');
 const mongoose = require('mongoose');
 
 const modelCountry = require('../models/country');
@@ -27,7 +27,6 @@ const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
         booking: {
-            // type: new GraphQLList(typeDefs.CommercialBookingType),
             type: new GraphQLList(typeDefs.CommercialBookingType),
             description: 'Obtenemos todas las reservas de un establecimiento o Usuario especifico por ID',
             args: {
@@ -35,13 +34,6 @@ const RootQuery = new GraphQLObjectType({
                 userID: { type: GraphQLID },
             },
             async resolve(parent, args) {
-
-                // return await modelCommBooking.find({
-                //     $or: [
-                //         { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
-                //         { "userID": new mongoose.Types.ObjectId(args.userID) }
-                //     ]
-                // });
 
                 return await modelCommBooking.aggregate([{
                         $match: {
@@ -59,6 +51,9 @@ const RootQuery = new GraphQLObjectType({
                             date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
                             time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
                             state: '$state',
+                            price: '$price',
+                            quantity: '$quantity',
+                            voucher: '$voucher',
                             user: '$userID',
                             establishment: '$commercialID'
                         }
