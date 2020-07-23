@@ -277,6 +277,15 @@ const CommercialBookingType = new GraphQLObjectType({
     })
 });
 
+const CommercialLogin = new GraphQLObjectType({
+    name: "Login",
+    description: "Modelo Login Usuarios",
+    fields: () => ({
+        establishment: { type: GraphQLString },
+        token: { type: GraphQLString }
+    })
+});
+
 module.exports = {
     CountryType,
     DepartmentType,
@@ -286,5 +295,6 @@ module.exports = {
     CommercialEstablishmentType,
     CommercialScheduleType,
     UserType,
-    CommercialBookingType
+    CommercialBookingType,
+    CommercialLogin
 };

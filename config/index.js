@@ -10,6 +10,7 @@ const config = {
     dbPass: process.env.DB_PASS,
     dbName: process.env.DB_NAME,
     mToken: process.env.MAIN_TOKEN,
+    loginToken: process.env.TOKEN_SECRET_LOGIN,
     sendgridAPI: process.env.SENGRID_API_SECRET,
     destEmail: process.env.DEST_EMAIL,
     bodyEmail: process.env.BODY_EMAIL,

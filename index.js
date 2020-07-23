@@ -52,6 +52,14 @@ app.use('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/token', tokenRouter);
 
+app.get('/', function(req, resp) {
+    return resp.status(200).json({
+        message: 'API GraphQL',
+        author: '@devfko <proyectosevfko@gmailcom>',
+        url_main: `${config.appURL}` + (config.appPort ? ':' + config.appPort : '') + `/graphql`
+    });
+});
+
 server.applyMiddleware({ app });
 app.get('/', expressPlayGround({
     endpoint: '/graphql'

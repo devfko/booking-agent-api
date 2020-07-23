@@ -2,6 +2,10 @@ const graphql = require('graphql');
 const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { config } = require('../../config');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -84,7 +88,35 @@ const editCommercialEstablishment = {
     }
 };
 
+const loginCommercialEstablishment = {
+    type: typeDefs.CommercialLogin,
+    description: 'Login Establecimientos Comerciales',
+    args: {
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) }
+    },
+    async resolve(parent, args) {
+
+        let user = await modelCommEstablishment.find({ email: args.email });
+
+        if (user.length) {
+
+            let userFinded = await bcrypt.compareSync(args.password, user[0].password);
+
+            if (userFinded) {
+                const token = jwt.sign({ _id: user[0]._id, email: user[0].email }, config.loginToken, { expiresIn: '1d' });
+
+                return { establishment: user[0].name, token };
+            }
+        }
+
+        return { establishment: 'Usuario y/o Password no válido', token: "" };
+
+    }
+};
+
 module.exports = {
     addCommercialEstablishment,
-    editCommercialEstablishment
+    editCommercialEstablishment,
+    loginCommercialEstablishment
 };
