@@ -56,7 +56,7 @@ app.get('/', function(req, resp) {
     return resp.status(200).json({
         message: 'API GraphQL',
         author: '@devfko <proyectosevfko@gmailcom>',
-        url_main: `${config.appURL}` + (config.appPort ? ':' + config.appPort : '') + `/graphql`
+        url_main: `${config.appURL}` + (process.env.NODE_ENV !== 'production' ? ':' + config.appPort : '') + `/graphql`
     });
 });
 
@@ -92,5 +92,3 @@ function normalizePort(val) {
 
     return false;
 }
-
-// TODO: Implementar proceso de subida/modificación de logo del establecimiento
