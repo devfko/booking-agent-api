@@ -14,7 +14,7 @@ const {
 } = require('./mutations/commercial_establishment');
 const { addCommercialSchedule } = require('./mutations/commercial_schedule');
 const { addUser, editUser } = require('./mutations/user');
-const { addCommercialBooking } = require('./mutations/commercial_booking');
+const { addCommercialBooking, editCommercialBooking } = require('./mutations/commercial_booking');
 
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
@@ -30,7 +30,8 @@ const Mutation = new GraphQLObjectType({
         addCommercialSchedule,
         addUser,
         editUser,
-        addCommercialBooking
+        addCommercialBooking,
+        editCommercialBooking
     }
 });
 

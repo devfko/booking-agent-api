@@ -2,6 +2,8 @@ const graphql = require('graphql');
 const typeDefs = require('./types/typeQueries');
 const mongoose = require('mongoose');
 
+const validateToken = require('../util/token/tokens');
+
 const modelCountry = require('../models/country');
 const modelDepartment = require('../models/department');
 const modelCity = require('../models/city');
@@ -33,32 +35,46 @@ const RootQuery = new GraphQLObjectType({
                 commercialID: { type: GraphQLID },
                 userID: { type: GraphQLID },
             },
-            async resolve(parent, args) {
+            async resolve(parent, args, context) {
+                let verifiedToken = await validateToken.extractToken(context.req);
 
-                return await modelCommBooking.aggregate([{
-                        $match: {
-                            $or: [
-                                { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
-                                { "userID": new mongoose.Types.ObjectId(args.userID) }
-                            ]
-                        }
-                    },
-                    { $sort: { date: -1, time: 1 } },
-                    {
-                        $project: {
-                            _id: false,
-                            id: '$_id',
-                            date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
-                            time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
-                            state: '$state',
-                            price: '$price',
-                            quantity: '$quantity',
-                            voucher: '$voucher',
-                            user: '$userID',
-                            establishment: '$commercialID'
-                        }
+                if (verifiedToken[0] !== undefined) {
+
+                    // Se válida que el _id del token corresponda con el filtro ingresado de Establecimiento o del Usuario
+                    if (verifiedToken[0]._id != args.commercialID && verifiedToken[0]._id != args.userID) {
+                        return modelCommBooking.find({ name: 'token_exit_forced' });
                     }
-                ]);
+
+                    return await modelCommBooking.aggregate([{
+                            $match: {
+                                $or: [
+                                    { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
+                                    { "userID": new mongoose.Types.ObjectId(args.userID) }
+                                ]
+                            }
+                        },
+                        { $sort: { date: -1, time: 1 } },
+                        {
+                            $project: {
+                                _id: false,
+                                id: '$_id',
+                                date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+                                time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
+                                state: '$state',
+                                price: '$price',
+                                quantity: '$quantity',
+                                voucher: '$voucher',
+                                user: '$userID',
+                                establishment: '$commercialID'
+                            }
+                        }
+                    ]);
+                } else {
+                    console.log('-fucking');
+                    console.log(verifiedToken);
+
+                    return modelCommBooking.find({ name: 'token_exit_forced' });
+                }
             }
         },
         commercial_category: {

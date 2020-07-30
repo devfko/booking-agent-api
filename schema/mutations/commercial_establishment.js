@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { config } = require('../../config');
 
+const validateToken = require('../../util/token/tokens');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -78,13 +80,28 @@ const editCommercialEstablishment = {
             description: 'ID de la Categoria del Establecimiento'
         }
     },
-    async resolve(parent, args) {
-        return new Promise((resolve, reject) => {
-            modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.id) }, { "$set": args }, { new: true }).exec((err, resp) => {
-                if (err) reject(err);
-                else resolve(resp);
+    async resolve(parent, args, context) {
+
+        let verifiedToken = await validateToken.extractToken(context.req);
+
+        if (verifiedToken[0] !== undefined) {
+
+            // Se valida que el _id del token corresponda con el id del Establecimiento que se está modificando
+            if (verifiedToken[0]._id != args.id) {
+                // return modelCommEstablishment.find({ name: 'token_exit_forced' });
+                return {};
+            }
+
+            return new Promise((resolve, reject) => {
+                modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.id) }, { "$set": args }, { new: true }).exec((err, resp) => {
+                    if (err) reject(err);
+                    else resolve(resp);
+                });
             });
-        });
+        } else {
+            return {};
+            // return modelCommEstablishment.find({ name: 'token_exit_forced' });
+        }
     }
 };
 

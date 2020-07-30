@@ -3,6 +3,8 @@ const typeDefs = require('../types/typeQueries');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const { pubsub } = require('../helper');
+
+const validateToken = require('../../util/token/tokens');
 const genVoucher = require('../../util/generators/voucher');
 
 const {
@@ -64,4 +66,58 @@ const addCommercialBooking = {
     }
 };
 
-module.exports = { addCommercialBooking };
+const editCommercialBooking = {
+    type: typeDefs.CommercialBookingType,
+    description: 'Modificación de Reservas realizadas',
+    args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+        commercialID: { type: GraphQLNonNull(GraphQLID) },
+        date: { type: GraphQLNonNull(GraphQLString) },
+        time: { type: GraphQLNonNull(GraphQLString) },
+        price: { type: GraphQLFloat },
+        state: { type: GraphQLNonNull(GraphQLBoolean) },
+        quantity: { type: GraphQLInt }
+    },
+    async resolve(parent, args, context) {
+
+        let verifiedToken = await validateToken.extractToken(context.req);
+
+        if (verifiedToken[0] !== undefined) {
+
+            // Se valida que el _id del token corresponda con el id del Establecimiento al cual se encuentra registrada la reserva
+            if (verifiedToken[0]._id != args.commercialID) {
+                return modelCommBooking.find({ name: 'token_exit_forced' });
+            }
+
+            moment.locale('es');
+            let dateTime = new Date(args.date + ' ' + args.time);
+
+            if (moment(dateTime).isValid()) {
+
+                args.date = new Date(dateTime - dateTime.getTimezoneOffset() * 60000);
+                args.time = new Date(dateTime - dateTime.getTimezoneOffset() * 60000);
+
+                return new Promise((resolve, reject) => {
+                    modelCommBooking.findOneAndUpdate({
+                        $and: [
+                            { "_id": mongoose.Types.ObjectId(args.id) },
+                            { "commercialID": mongoose.Types.ObjectId(args.commercialID) }
+                        ]
+                    }, { "$set": args }, { new: true }).exec((err, resp) => {
+                        if (err) reject(err);
+                        else resolve(resp);
+                    });
+                });
+            } else {
+                return modelCommBooking;
+            }
+        } else {
+            return modelCommBooking.find({ name: 'token_exit_forced' });
+        }
+    }
+};
+
+module.exports = {
+    addCommercialBooking,
+    editCommercialBooking
+};

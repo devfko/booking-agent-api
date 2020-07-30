@@ -31,7 +31,8 @@ const server = new ApolloServer({
         }
 
         return ({ message: err.message, statusCode: 500 });
-    }
+    },
+    context: req => ({...req }),
 });
 
 // Routes
