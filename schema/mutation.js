@@ -11,7 +11,8 @@ const {
     addCommercialEstablishment,
     editCommercialEstablishment,
     loginCommercialEstablishment,
-    singleImageEstablishment
+    singleImageEstablishment,
+    multipleImageTesting
 } = require('./mutations/commercial_establishment');
 const { addCommercialSchedule } = require('./mutations/commercial_schedule');
 const { addUser, editUser } = require('./mutations/user');
@@ -33,7 +34,8 @@ const Mutation = new GraphQLObjectType({
         editUser,
         addCommercialBooking,
         editCommercialBooking,
-        singleImageEstablishment
+        singleImageEstablishment,
+        multipleImageTesting
     }
 });
 

@@ -14,7 +14,8 @@ const config = {
     sendgridAPI: process.env.SENGRID_API_SECRET,
     destEmail: process.env.DEST_EMAIL,
     bodyEmail: process.env.BODY_EMAIL,
-    subjEmail: process.env.SUBJ_EMAIL
+    subjEmail: process.env.SUBJ_EMAIL,
+    imageEstablishment: process.env.FOLDER_IMAGES_COMMERCIAL
 };
 
 module.exports = { config };

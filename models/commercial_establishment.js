@@ -91,12 +91,15 @@ commEstablishmentSchema.pre('save', async function(next) {
 
 commEstablishmentSchema.pre('findOneAndUpdate', async function(next) {
     const password = this.getUpdate().$set.password;
-    const docToUpdate = await this.model.findOne(this.getQuery());
 
-    if (password != docToUpdate.password) {
-        docToUpdate.password = await generarHash(password);
-        // Retornamos el valor encryptado como respuesta
-        this.getUpdate().$set.password = docToUpdate.password;
+    if (password !== undefined) {
+        const docToUpdate = await this.model.findOne(this.getQuery());
+
+        if (password != docToUpdate.password) {
+            docToUpdate.password = await generarHash(password);
+            // Retornamos el valor encryptado como respuesta
+            this.getUpdate().$set.password = docToUpdate.password;
+        }
     }
     next();
 });

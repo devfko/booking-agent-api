@@ -7,9 +7,9 @@ const rateLimit = require('express-rate-limit');
 const { ApolloServer } = require('apollo-server-express');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
 const { graphqlUploadExpress } = require('graphql-upload');
+const { mkdir } = require('fs');
 const path = require('path');
 const { config } = require('./config');
-const storeUpload = require('./util/uploads/storeFS');
 const schema = require('./schema');
 
 // MongoConnection
@@ -34,11 +34,15 @@ const server = new ApolloServer({
 
         return ({ message: err.message, statusCode: 500 });
     },
-    context: req => ({...req, storeUpload }),
+    context: req => ({...req }),
 });
 
 // Routes
 var tokenRouter = require('./util/routes/token');
+
+mkdir(config.imageEstablishment, { recursive: true }, (err) => {
+    if (err) throw err;
+});
 
 const app = express();
 app.use(graphqlUploadExpress({ maxFieldSize: 10000000, maxFiles: 5 }));
@@ -54,7 +58,7 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
+app.use(config.imageEstablishment, express.static(__dirname + config.imageEstablishment));
 app.use('/token', tokenRouter);
 
 app.get('/', function(req, resp) {

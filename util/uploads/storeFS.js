@@ -1,27 +1,12 @@
 const { createWriteStream, unlink } = require('fs');
-const UPLOAD_DIR = './public/uploads';
-
-// const storeFS = ({ stream, filename }) => {
-//     const uploadDir = './photos';
-//     const path = `${uploadDir}/${filename}`;
-//     return new Promise((resolve, reject) =>
-//         stream
-//         .on('error', error => {
-//             if (stream.truncated)
-//             // delete the truncated file
-//                 fs.unlinkSync(path);
-//             reject(error);
-//         })
-//         .pipe(fs.createWriteStream(path))
-//         .on('error', error => reject(error))
-//         .on('finish', () => resolve({ path }))
-//     );
-// };
+const { config } = require('../../config');
+// const UPLOAD_DIR = './public/uploads';
 
 const storeUpload = async(upload) => {
+
     const { createReadStream, filename, mimetype } = await upload;
     const stream = createReadStream();
-    const path = `${UPLOAD_DIR}/${filename}`;
+    const path = `${config.imageEstablishment}/${filename}`;
     const file = { filename, mimetype, path };
 
     // Store the file in the filesystem.

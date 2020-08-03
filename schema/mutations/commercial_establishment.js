@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { config } = require('../../config');
 const validateToken = require('../../util/token/tokens');
+const storeUpload = require('../../util/uploads/storeFS');
 
 const {
     GraphQLString,
@@ -13,10 +14,12 @@ const {
     GraphQLID,
     GraphQLBoolean,
     GraphQLInt,
-    GraphQLFloat
+    GraphQLFloat,
+    GraphQLList
 } = graphql;
 
 const { GraphQLUpload } = require('graphql-upload');
+const { ImageFile } = require('../types/typeQueries');
 
 const modelCommEstablishment = mongoose.model('Commercial_Establishment');
 
@@ -134,34 +137,60 @@ const loginCommercialEstablishment = {
 };
 
 const singleImageEstablishment = {
-    type: typeDefs.ImageFile,
+    // type: typeDefs.ImageFile,
+    type: typeDefs.CommercialEstablishmentType,
     description: 'Stores a single file.',
     args: {
         file: {
             description: 'File to store.',
             type: GraphQLNonNull(GraphQLUpload),
         },
-        commercialID: { type: GraphQLString },
+        commercialID: { type: GraphQLID },
     },
-    resolve: async(parent, { file }, { storeUpload }) => storeUpload(file),
-    // resolve: async(parent, args, { storeUpload }) => storeUpload(args),
-    // async resolve(parent, args, { storeUpload }) {
-    //     storeUpload(args);
+    async resolve(parent, args) {
 
-    //     console.log(file);
-    // },
-    // async resolve(parent, args, { storeUpload }) {
-    //     console.log('args : ', args);
+        const result = await storeUpload(args.file);
+        console.log('result : ', result.path);
 
-    //     const result = await storeUpload(args.file);
+        return new Promise((resolve, reject) => {
+            modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
+                if (err) reject(err);
+                else {
+                    console.log(resp);
+                    resolve(resp);
+                }
+            });
+        });
+    }
+};
 
-    //     console.log('result : ', result);
-    // }
+const multipleImageTesting = {
+    // type: typeDefs.CommercialEstablishmentType,
+    type: GraphQLNonNull(GraphQLList(GraphQLNonNull(typeDefs.ImageFile))),
+    description: 'Stores a single file.',
+    args: {
+        files: {
+            description: 'File to store.',
+            type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLUpload))),
+        },
+        commercialID: { type: GraphQLID },
+    },
+    async resolve(parent, args) {
+
+        const results = await Promise.allSettled(args.files.map(storeUpload));
+        return results.reduce((storedFiles, { value, reason }) => {
+            if (value) storedFiles.push(value);
+            // Realistically you would do more than just log an error.
+            else console.error(`Failed to store upload: ${reason}`);
+            return storedFiles;
+        }, []);
+    }
 };
 
 module.exports = {
     addCommercialEstablishment,
     editCommercialEstablishment,
     loginCommercialEstablishment,
-    singleImageEstablishment
+    singleImageEstablishment,
+    multipleImageTesting
 };
