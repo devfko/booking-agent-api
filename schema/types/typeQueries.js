@@ -286,6 +286,25 @@ const CommercialLogin = new GraphQLObjectType({
     })
 });
 
+const ImageFile = new GraphQLObjectType({
+    name: "Photo",
+    description: "Modelo Foto-Logo Establecimientos",
+    fields: () => ({
+        path: {
+            description: 'Where it’s stored in the filesystem.',
+            type: GraphQLNonNull(GraphQLString),
+        },
+        filename: {
+            description: 'Filename, including extension.',
+            type: GraphQLNonNull(GraphQLString),
+        },
+        mimetype: {
+            description: 'MIME type.',
+            type: GraphQLNonNull(GraphQLString),
+        }
+    })
+});
+
 module.exports = {
     CountryType,
     DepartmentType,
@@ -296,5 +315,6 @@ module.exports = {
     CommercialScheduleType,
     UserType,
     CommercialBookingType,
-    CommercialLogin
+    CommercialLogin,
+    ImageFile
 };

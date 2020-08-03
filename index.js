@@ -4,12 +4,13 @@ const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { https } = require('http');
-const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
-const { config } = require('./config');
-const schema = require('./schema');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
+const { graphqlUploadExpress } = require('graphql-upload');
+const path = require('path');
+const { config } = require('./config');
+const storeUpload = require('./util/uploads/storeFS');
+const schema = require('./schema');
 
 // MongoConnection
 const mongoConnection = require('./db/db');
@@ -20,6 +21,7 @@ const server = new ApolloServer({
     introspection: process.env.NODE_ENV !== 'production',
     playground: true,
     tracing: true,
+    uploads: false,
     formatError: (err) => {
 
         if (err.message.includes("validation failed")) {
@@ -32,13 +34,14 @@ const server = new ApolloServer({
 
         return ({ message: err.message, statusCode: 500 });
     },
-    context: req => ({...req }),
+    context: req => ({...req, storeUpload }),
 });
 
 // Routes
 var tokenRouter = require('./util/routes/token');
 
 const app = express();
+app.use(graphqlUploadExpress({ maxFieldSize: 10000000, maxFiles: 5 }));
 app.use(helmet());
 app.use(express.json());
 
@@ -51,6 +54,7 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 app.use('/token', tokenRouter);
 
 app.get('/', function(req, resp) {

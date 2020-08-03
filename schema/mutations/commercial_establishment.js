@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { config } = require('../../config');
-
 const validateToken = require('../../util/token/tokens');
 
 const {
@@ -16,6 +15,8 @@ const {
     GraphQLInt,
     GraphQLFloat
 } = graphql;
+
+const { GraphQLUpload } = require('graphql-upload');
 
 const modelCommEstablishment = mongoose.model('Commercial_Establishment');
 
@@ -132,8 +133,35 @@ const loginCommercialEstablishment = {
     }
 };
 
+const singleImageEstablishment = {
+    type: typeDefs.ImageFile,
+    description: 'Stores a single file.',
+    args: {
+        file: {
+            description: 'File to store.',
+            type: GraphQLNonNull(GraphQLUpload),
+        },
+        commercialID: { type: GraphQLString },
+    },
+    resolve: async(parent, { file }, { storeUpload }) => storeUpload(file),
+    // resolve: async(parent, args, { storeUpload }) => storeUpload(args),
+    // async resolve(parent, args, { storeUpload }) {
+    //     storeUpload(args);
+
+    //     console.log(file);
+    // },
+    // async resolve(parent, args, { storeUpload }) {
+    //     console.log('args : ', args);
+
+    //     const result = await storeUpload(args.file);
+
+    //     console.log('result : ', result);
+    // }
+};
+
 module.exports = {
     addCommercialEstablishment,
     editCommercialEstablishment,
-    loginCommercialEstablishment
+    loginCommercialEstablishment,
+    singleImageEstablishment
 };

@@ -16,6 +16,7 @@ const modelCommBooking = require('../models/commercial_booking');
 
 const {
     GraphQLObjectType,
+    GraphQLScalarType,
     GraphQLString,
     GraphQLID,
     GraphQLInt,
@@ -24,6 +25,9 @@ const {
     GraphQLNonNull,
     GraphQLBoolean
 } = graphql;
+
+const { GraphQLUpload } = require('graphql-upload');
+
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
@@ -219,5 +223,15 @@ const RootQuery = new GraphQLObjectType({
         }
     }
 });
+
+const Upload = new GraphQLScalarType({
+    name: "Upload",
+    serialize(value) {
+        let result;
+        // Implement custom behavior by setting the 'result' variable
+        return value;
+    }
+});
+
 
 module.exports = RootQuery;
