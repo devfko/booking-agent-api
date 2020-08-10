@@ -18,4 +18,12 @@ const config = {
     imageEstablishment: process.env.FOLDER_IMAGES_COMMERCIAL
 };
 
-module.exports = { config };
+const cloudinaryConfig = {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    estabishmentWidth: process.env.CLOUDINARY_ESTABLISHMENT_WIDTH,
+    establishmentHeigth: process.env.CLOUDINARY_ESTABLISHMENT_HEIGTH
+};
+
+module.exports = { config, cloudinaryConfig };

@@ -1,6 +1,14 @@
 const { createWriteStream, unlink } = require('fs');
-const { config } = require('../../config');
+const { config, cloudinaryConfig } = require('../../config');
+const { response } = require('express');
+const cloudinary = require('cloudinary').v2;
 // const UPLOAD_DIR = './public/uploads';
+
+cloudinary.config({
+    cloud_name: cloudinaryConfig.cloud_name,
+    api_key: cloudinaryConfig.api_key,
+    api_secret: cloudinaryConfig.api_secret
+});
 
 const storeUpload = async(upload) => {
 
@@ -34,10 +42,43 @@ const storeUpload = async(upload) => {
         stream.pipe(writeStream);
     });
 
-    // Record the file metadata in the DB.
-    // db.get('uploads').push(file).write();
+    return file;
+};
+
+const cloudinaryStoreUpload = async(upload) => {
+
+    const { createReadStream, filename, mimetype } = await upload;
+    const stream = createReadStream();
+    let path = '';
+    const file = { filename, mimetype, path };
+
+    const cloudinaryUpload = async({ stream }) => {
+        try {
+            await new Promise((resolve, reject) => {
+                const streamLoad = cloudinary.uploader.upload_stream({
+                    width: cloudinaryConfig.estabishmentWidth,
+                    height: cloudinaryConfig.establishmentHeigth
+                }, function(err, result) {
+                    if (result) {
+                        // console.log({ result });
+                        file.path = result.url;
+                        resolve();
+                    } else {
+                        reject(err);
+                    }
+                });
+
+                stream.pipe(streamLoad);
+            });
+        } catch (err) {
+            throw new Error(`Failed to upload profile picture ! Err:${err.message}`);
+        }
+    };
+
+    await cloudinaryUpload({ stream });
+    console.log('file : ', file);
 
     return file;
 };
 
-module.exports = storeUpload;
+module.exports = { storeUpload, cloudinaryStoreUpload };

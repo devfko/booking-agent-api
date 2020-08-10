@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { config } = require('../../config');
 const validateToken = require('../../util/token/tokens');
-const storeUpload = require('../../util/uploads/storeFS');
+const { storeUpload, cloudinaryStoreUpload } = require('../../util/uploads/storeFS');
 
 const {
     GraphQLString,
@@ -139,7 +139,7 @@ const loginCommercialEstablishment = {
 const singleImageEstablishment = {
     // type: typeDefs.ImageFile,
     type: typeDefs.CommercialEstablishmentType,
-    description: 'Stores a single file.',
+    description: 'Update Image for Commercial Establishment.',
     args: {
         file: {
             description: 'File to store.',
@@ -149,8 +149,8 @@ const singleImageEstablishment = {
     },
     async resolve(parent, args) {
 
-        const result = await storeUpload(args.file);
-        console.log('result : ', result.path);
+        const result = await cloudinaryStoreUpload(args.file);
+        console.log('path : ', result.path);
 
         return new Promise((resolve, reject) => {
             modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
