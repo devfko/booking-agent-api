@@ -106,6 +106,7 @@ const CommercialCategoryType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
+        url: { type: GraphQLString, description: 'Url imagen icono de la categoria' },
         token: {
             type: GraphQLString,
             description: 'Token de Autorización de Creación de Parámetros'

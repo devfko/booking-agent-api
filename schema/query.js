@@ -89,7 +89,16 @@ const RootQuery = new GraphQLObjectType({
                 name: { type: GraphQLString, description: 'Campo Opcional # 2' }
             },
             async resolve(parent, args) {
-                return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: args.name }] });
+                let likeStr = '.*' + args.name + '.*';
+
+                return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+            }
+        },
+        commercial_categories: {
+            type: new GraphQLList(typeDefs.CommercialCategoryType),
+            description: 'Obtenemos la información de las categorias de establecimientos',
+            async resolve(parent, args) {
+                return await modelCommCategory.find({}).sort({ name: 1 });
             }
         },
         schedule: {

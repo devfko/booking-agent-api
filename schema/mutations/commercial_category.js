@@ -16,6 +16,7 @@ const addCommercialCategory = {
     description: 'Creación de Categorias de Establecimientos',
     args: {
         name: { type: GraphQLNonNull(GraphQLString) },
+        url: { type: GraphQLNonNull(GraphQLString) },
         token: { type: new GraphQLNonNull(GraphQLString) }
     },
     async resolve(parent, args) {
@@ -27,7 +28,8 @@ const addCommercialCategory = {
         }
 
         let category = new modelCommCategory({
-            name: args.name
+            name: args.name,
+            url: args.url
         });
 
         return category.save();

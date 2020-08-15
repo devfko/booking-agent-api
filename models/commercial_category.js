@@ -9,6 +9,12 @@ const commCategorySchema = new Schema({
         required: true,
         unique: true
     },
+    url: {
+        type: String,
+        trim: true,
+        required: true,
+        default: ''
+    },
     created_at: {
         type: Date,
         default: Date.now
