@@ -4,7 +4,15 @@ const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { ApolloServer } = require('apollo-server-express');
+const {
+    ApolloServer,
+    AuthenticationError,
+    ForbiddenError,
+    SchemaError,
+    UserInputError,
+    ValidationError,
+    ApolloError
+} = require('apollo-server-express');
 const expressPlayGround = require('graphql-playground-middleware-express').default;
 const { graphqlUploadExpress } = require('graphql-upload');
 const { mkdir } = require('fs');
@@ -23,23 +31,61 @@ const server = new ApolloServer({
     playground: true,
     tracing: true,
     uploads: false,
-    formatError: (err) => {
+    formatError: err => ({
 
-        if (err.message.includes("validation failed")) {
-            return ({ message: err.message, statusCode: 409 });
-        }
+        message: err.message,
+        code: err.extensions.code,
+        stack: (process.env.NODE_ENV === 'production') ? err.extensions.exception.stacktrace : 'PRODUCTION'
 
-        if (err.message.includes("ObjectId failed")) {
-            return ({ message: 'Clave Primaria no es válida : ' + err.message, statusCode: 409 });
-        }
+        // err = JSON.stringify(err);
 
-        return ({ message: err.message, statusCode: 500 });
-    },
+        // return ({
+        //     message: err.message,
+        //     code: err.extensions.code,
+        //     stack: (process.env.NODE_ENV === 'production') ? err.extensions.exception.stacktrace : 'PRODUCTION'
+        // });
+
+        // console.log(err);
+
+        // if (err.originalError instanceof AuthenticationError) {
+        //     return new ApolloError('Authentication');
+        // }
+
+        // if (err.originalError instanceof ForbiddenError) {
+        //     return new ApolloError('ForbiddenError');
+        // }
+
+        // if (err.originalError instanceof SchemaError) {
+        //     return new ApolloError('Authentication');
+        // }
+
+        // if (err.originalError instanceof SchemaError) {
+        //     return new ApolloError('SchemaError');
+        // }
+
+        // if (err.originalError instanceof UserInputError) {
+        //     return new ApolloError('UserInputError');
+        // }
+
+        // if (err.originalError instanceof ValidationError) {
+        //     return new ApolloError('ValidationError');
+        // }
+        // if (err.message.includes("validation failed")) {
+        //     return ({ message: err.message, statusCode: 409 });
+        // }
+
+        // if (err.message.includes("ObjectId failed")) {
+        //     return ({ message: 'Clave Primaria no es válida : ' + err.message, statusCode: 409 });
+        // }
+
+        // return ({ message: err.message, code: err.extensions.code || 500 });
+    }),
     context: req => ({...req }),
 });
 
 // Routes
 var tokenRouter = require('./util/routes/token');
+const { extensions } = require('./schema/query');
 
 mkdir(config.imageEstablishment, { recursive: true }, (err) => {
     if (err) throw err;

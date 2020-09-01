@@ -1,3 +1,10 @@
+const {
+    UserInputError,
+    AuthenticationError,
+    ForbiddenError,
+    ValidationError
+} = require('apollo-server-express');
+
 const graphql = require('graphql');
 const typeDefs = require('./types/typeQueries');
 const mongoose = require('mongoose');
@@ -162,15 +169,46 @@ const RootQuery = new GraphQLObjectType({
         commercial_establishments: {
             type: new GraphQLList(typeDefs.CommercialEstablishmentType),
             description: 'Obtenemos los establecimientos comerciales registrados con o sin filtro de estado',
-            args: { active: { type: GraphQLBoolean, description: 'Valores de true = Activos / false = Inactivos' } },
+            args: {
+                active: { type: GraphQLBoolean, description: 'Valores de true = Activos / false = Inactivos' },
+                categoryID: { type: GraphQLID, description: 'Filtro por Categoria de Establecimiento' },
+                cityID: { type: GraphQLID, description: 'Filtro por Ciudad' },
+            },
             async resolve(parent, args) {
-                const { active } = args;
-                let query = {
-                    active: {
-                        $in: active
-                    }
-                };
-                query = (typeof active !== "undefined") ? query : {};
+                let query = {};
+                let queryTemp = {};
+                let arrQuery = [];
+
+                if (typeof args.active !== "undefined") {
+                    queryTemp = {
+                        active: {
+                            $in: args.active
+                        }
+                    };
+
+                    arrQuery.push(queryTemp);
+                }
+
+                if (typeof args.categoryID !== "undefined") {
+                    queryTemp = {
+                        categoryID: args.categoryID
+                    };
+
+                    arrQuery.push(queryTemp);
+                }
+
+                if (typeof args.cityID !== "undefined") {
+                    queryTemp = {
+                        cityID: args.cityID
+                    };
+
+                    arrQuery.push(queryTemp);
+                }
+
+                if (arrQuery.length > 0) {
+                    query = { $and: arrQuery };
+                }
+
                 return await modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
             }
         },
@@ -179,14 +217,29 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de una Ciudad especifica por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await modelCity.findById(args.id);
+                let errors = [];
+                try {
+                    return await modelCity.findById(args.id);
+                } catch (err) {
+                    errors.push('Error, the process did not get a response, please try again');
+                    throw new ValidationError(errors);
+                }
             }
         },
         cities: {
             type: new GraphQLList(typeDefs.CityType),
             description: 'Obtenemos el listado de las Ciudades parametrizadas en la Base',
             async resolve(parent, args) {
-                return await modelCity.find({}).sort({ name: 1 });
+                // if (args.input !== 'expected') {
+                //     throw new UserInputError('Form Arguments invalid', {
+                //         invalidArgs: Object.keys(args),
+                //     });
+                // }
+                try {
+                    return await modelCity.find({}).sort({ name: 1 });
+                } catch (error) {
+                    throw new ValidationError({ message: 'error server', code: 500 });
+                }
             }
         },
         department: {
@@ -194,7 +247,11 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de un Departamento especifico por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await modelDepartment.findById(args.id);
+                try {
+                    return await modelDepartment.findById(args.id);
+                } catch (error) {
+                    return new Error({ message: "puto", code: 500 });
+                }
             }
         },
         departments: {
