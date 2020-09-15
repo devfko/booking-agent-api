@@ -11,6 +11,8 @@ const mongoose = require('mongoose');
 
 const validateToken = require('../util/token/tokens');
 
+const modelCommPortfolio = require('../models/commercial_portfolio');
+const modelWeekday = require('../models/weekday');
 const modelCountry = require('../models/country');
 const modelDepartment = require('../models/department');
 const modelCity = require('../models/city');
@@ -33,9 +35,6 @@ const {
     GraphQLBoolean
 } = graphql;
 
-const { GraphQLUpload } = require('graphql-upload');
-
-
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
@@ -47,44 +46,49 @@ const RootQuery = new GraphQLObjectType({
                 userID: { type: GraphQLID },
             },
             async resolve(parent, args, context) {
-                let verifiedToken = await validateToken.extractToken(context.req);
+                try {
 
-                if (verifiedToken[0] !== undefined) {
+                    let verifiedToken = await validateToken.extractToken(context.req);
 
-                    // Se válida que el _id del token corresponda con el filtro ingresado de Establecimiento o del Usuario
-                    if (verifiedToken[0]._id != args.commercialID && verifiedToken[0]._id != args.userID) {
+                    if (verifiedToken[0] !== undefined) {
+
+                        // Se válida que el _id del token corresponda con el filtro ingresado de Establecimiento o del Usuario
+                        if (verifiedToken[0]._id != args.commercialID && verifiedToken[0]._id != args.userID) {
+                            return modelCommBooking.find({ name: 'token_exit_forced' });
+                        }
+
+                        return await modelCommBooking.aggregate([{
+                                $match: {
+                                    $or: [
+                                        { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
+                                        { "userID": new mongoose.Types.ObjectId(args.userID) }
+                                    ]
+                                }
+                            },
+                            { $sort: { date: -1, time: 1 } },
+                            {
+                                $project: {
+                                    _id: false,
+                                    id: '$_id',
+                                    date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+                                    time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
+                                    state: '$state',
+                                    price: '$price',
+                                    quantity: '$quantity',
+                                    voucher: '$voucher',
+                                    user: '$userID',
+                                    establishment: '$commercialID'
+                                }
+                            }
+                        ]);
+                    } else {
+                        console.log('-fucking');
+                        console.log(verifiedToken);
+
                         return modelCommBooking.find({ name: 'token_exit_forced' });
                     }
-
-                    return await modelCommBooking.aggregate([{
-                            $match: {
-                                $or: [
-                                    { "commercialID": new mongoose.Types.ObjectId(args.commercialID) },
-                                    { "userID": new mongoose.Types.ObjectId(args.userID) }
-                                ]
-                            }
-                        },
-                        { $sort: { date: -1, time: 1 } },
-                        {
-                            $project: {
-                                _id: false,
-                                id: '$_id',
-                                date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
-                                time: { $dateToString: { format: '%H:%M:%S', date: '$time' } },
-                                state: '$state',
-                                price: '$price',
-                                quantity: '$quantity',
-                                voucher: '$voucher',
-                                user: '$userID',
-                                establishment: '$commercialID'
-                            }
-                        }
-                    ]);
-                } else {
-                    console.log('-fucking');
-                    console.log(verifiedToken);
-
-                    return modelCommBooking.find({ name: 'token_exit_forced' });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
                 }
             }
         },
@@ -97,15 +101,22 @@ const RootQuery = new GraphQLObjectType({
             },
             async resolve(parent, args) {
                 let likeStr = '.*' + args.name + '.*';
-
-                return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+                try {
+                    return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         commercial_categories: {
             type: new GraphQLList(typeDefs.CommercialCategoryType),
             description: 'Obtenemos la información de las categorias de establecimientos',
             async resolve(parent, args) {
-                return await modelCommCategory.find({}).sort({ name: 1 });
+                try {
+                    return await modelCommCategory.find({}).sort({ name: 1 });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         schedule: {
@@ -113,37 +124,42 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de horario de atención estándar por un ID especifico',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-
-                return await modelSchedule.aggregate([
-                    { $match: { "_id": new mongoose.Types.ObjectId(args.id) } },
-                    { $sort: { init_time: 1 } },
-                    {
-                        $project: {
-                            _id: false,
-                            id: '$_id',
-                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
-                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                try {
+                    return await modelSchedule.aggregate([
+                        { $match: { "_id": new mongoose.Types.ObjectId(args.id) } },
+                        { $sort: { init_time: 1 } },
+                        {
+                            $project: {
+                                _id: false,
+                                id: '$_id',
+                                init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
+                                final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                            }
                         }
-                    }
-                ]);
-
+                    ]);
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         schedules: {
             type: new GraphQLList(typeDefs.ScheduleType),
             description: 'Obtenemos todos los horarios de atención parametrizados en la Base',
             async resolve(parent, args) {
-
-                return await modelSchedule.aggregate([{
-                        $project: {
-                            _id: false,
-                            id: '$_id',
-                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
-                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
-                        }
-                    },
-                    { $sort: { init_time: 1 } }
-                ]);
+                try {
+                    return await modelSchedule.aggregate([{
+                            $project: {
+                                _id: false,
+                                id: '$_id',
+                                init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
+                                final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                            }
+                        },
+                        { $sort: { init_time: 1 } }
+                    ]);
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         commercial_schedule: {
@@ -151,7 +167,23 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos los horarios de atención de un establecimiento especifico por ID',
             args: { commercialID: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await modelCommSchedule.findOne({ commercialID: args.commercialID });
+                try {
+                    return await modelCommSchedule.findOne({ commercialID: args.commercialID });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
+            }
+        },
+        commercial_portfolio: {
+            type: new GraphQLList(typeDefs.CommercialPortfolioType),
+            description: 'Obtenemos el listado de los productos o servicios del establecimiento',
+            args: { commercialID: { type: new GraphQLNonNull(GraphQLID) } },
+            async resolve(parent, args) {
+                try {
+                    return await modelCommPortfolio.find({ commercialID: args.commercialID }).sort({ name: 1 });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         commercial_establishment: {
@@ -163,7 +195,11 @@ const RootQuery = new GraphQLObjectType({
             },
             async resolve(parent, args) {
                 let likeStr = '.*' + args.name + '.*';
-                return await modelCommEstablishment.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+                try {
+                    return await modelCommEstablishment.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         commercial_establishments: {
@@ -209,7 +245,22 @@ const RootQuery = new GraphQLObjectType({
                     query = { $and: arrQuery };
                 }
 
-                return await modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
+                try {
+                    return await modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
+            }
+        },
+        weekdays: {
+            type: new GraphQLList(typeDefs.WeekdayType),
+            description: 'Obtenemos el listado de los dias de la Semana',
+            async resolve(parent, args) {
+                try {
+                    return await modelWeekday.find({});
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         city: {
@@ -217,12 +268,10 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de una Ciudad especifica por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                let errors = [];
                 try {
                     return await modelCity.findById(args.id);
                 } catch (err) {
-                    errors.push('Error, the process did not get a response, please try again');
-                    throw new ValidationError(errors);
+                    throw new Error({ message: "Error returning results", code: 500 });
                 }
             }
         },
@@ -230,15 +279,10 @@ const RootQuery = new GraphQLObjectType({
             type: new GraphQLList(typeDefs.CityType),
             description: 'Obtenemos el listado de las Ciudades parametrizadas en la Base',
             async resolve(parent, args) {
-                // if (args.input !== 'expected') {
-                //     throw new UserInputError('Form Arguments invalid', {
-                //         invalidArgs: Object.keys(args),
-                //     });
-                // }
                 try {
                     return await modelCity.find({}).sort({ name: 1 });
                 } catch (error) {
-                    throw new ValidationError({ message: 'error server', code: 500 });
+                    throw new Error({ message: "Error returning results", code: 500 });
                 }
             }
         },
@@ -250,7 +294,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelDepartment.findById(args.id);
                 } catch (error) {
-                    return new Error({ message: "puto", code: 500 });
+                    throw new Error({ message: "Error returning results", code: 500 });
                 }
             }
         },
@@ -258,7 +302,11 @@ const RootQuery = new GraphQLObjectType({
             type: new GraphQLList(typeDefs.DepartmentType),
             description: 'Obtenemos el listado de Departamentos parametrizados en la Base',
             async resolve(parent, args) {
-                return await modelDepartment.find({}).sort({ name: 1 });
+                try {
+                    return await modelDepartment.find({}).sort({ name: 1 });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         country: {
@@ -266,14 +314,22 @@ const RootQuery = new GraphQLObjectType({
             description: 'Obtenemos la información de un Pais especifico por ID',
             args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             async resolve(parent, args) {
-                return await modelCountry.findById(args.id);
+                try {
+                    return await modelCountry.findById(args.id);
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         countries: {
             type: new GraphQLList(typeDefs.CountryType),
             description: 'Obtenemos el listado de Piases parametrizados en la Base',
             async resolve(parent, args) {
-                return await modelCountry.find({}).sort({ name: 1 });
+                try {
+                    return await modelCountry.find({}).sort({ name: 1 });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         },
         user: {
@@ -284,20 +340,14 @@ const RootQuery = new GraphQLObjectType({
                 email: { type: GraphQLString, description: 'Campo Opcional # 2' }
             },
             async resolve(parent, args) {
-                return await modelUser.findOne({ $or: [{ _id: args.id }, { email: args.email }] });
+                try {
+                    return await modelUser.findOne({ $or: [{ _id: args.id }, { email: args.email }] });
+                } catch (error) {
+                    throw new Error({ message: "Error returning results", code: 500 });
+                }
             }
         }
     }
 });
-
-const Upload = new GraphQLScalarType({
-    name: "Upload",
-    serialize(value) {
-        let result;
-        // Implement custom behavior by setting the 'result' variable
-        return value;
-    }
-});
-
 
 module.exports = RootQuery;

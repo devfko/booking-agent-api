@@ -6,6 +6,8 @@ const { addSchedule } = require('./mutations/schedule');
 const { addCountry } = require('./mutations/country');
 const { addDepartment } = require('./mutations/department');
 const { addCity } = require('./mutations/city');
+const { addWeekday } = require('./mutations/weekday');
+const { addPortfolio } = require('./mutations/commercial_portfolio');
 const { addCommercialCategory } = require('./mutations/commercial_category');
 const {
     addCommercialEstablishment,
@@ -35,7 +37,9 @@ const Mutation = new GraphQLObjectType({
         addCommercialBooking,
         editCommercialBooking,
         singleImageEstablishment,
-        multipleImageTesting
+        multipleImageTesting,
+        addWeekday,
+        addPortfolio
     }
 });
 

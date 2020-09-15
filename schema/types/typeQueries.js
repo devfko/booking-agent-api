@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const mongoose = require('mongoose');
 
+const modelWeekday = require('../../models/weekday');
 const modelCountry = require('../../models/country');
 const modelDepartment = require('../../models/department');
 const modelCity = require('../../models/city');
@@ -83,6 +84,15 @@ const CityType = new GraphQLObjectType({
             type: GraphQLString,
             description: 'Token de Autorización de Creación de Parámetros'
         }
+    })
+});
+
+const WeekdayType = new GraphQLObjectType({
+    name: 'Weekday',
+    description: 'Modelo de dias de la semana',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString }
     })
 });
 
@@ -179,6 +189,15 @@ const CommercialEstablishmentType = new GraphQLObjectType({
     })
 });
 
+const infoScheduleCommType = new GraphQLObjectType({
+    name: 'InfoScheduleCommercial',
+    description: 'Modelo de Retorno de horarios parametrizados por el establecimiento con el dia de la semana',
+    fields: () => ({
+        weekday: { type: GraphQLString },
+        schedule: { type: GraphQLList(ScheduleType) }
+    })
+});
+
 const CommercialScheduleType = new GraphQLObjectType({
     name: 'Commercial_Schedule',
     description: 'Modelo de Horarios de Atención por Establecimiento',
@@ -192,32 +211,73 @@ const CommercialScheduleType = new GraphQLObjectType({
             }
         },
         schedules: {
-            type: new GraphQLList(ScheduleType),
+            type: GraphQLList(infoScheduleCommType),
             description: 'Objeto del Modelo de Horarios de Atención',
             async resolve(parent, args) {
 
-                return await modelSchedule.aggregate([{
-                        $lookup: {
-                            from: "commercial_schedules",
-                            localField: "_id",
-                            foreignField: "scheduleID",
-                            as: "schedules"
+                return await modelWeekday.aggregate([{
+                        $project: {
+                            "weekday": "$$ROOT"
                         }
                     },
-                    { $match: { "schedules.commercialID": new mongoose.Types.ObjectId(parent.commercialID) } },
+                    {
+                        $lookup: {
+                            localField: "weekday._id",
+                            from: "commercial_schedules",
+                            foreignField: "weekdayID",
+                            as: "commSchedule"
+                        }
+                    },
+                    { $match: { "commSchedule.commercialID": new mongoose.Types.ObjectId(parent.commercialID) } },
                     {
                         $unwind: {
-                            path: "$schedules",
+                            path: "$commSchedule",
                             preserveNullAndEmptyArrays: true
                         }
                     },
-                    { $sort: { "init_time": 1 } },
+                    {
+                        $lookup: {
+                            localField: "commSchedule.scheduleID",
+                            from: "schedules",
+                            foreignField: "_id",
+                            as: "schedule"
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: "$schedule",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                name: "$weekday.name",
+                            },
+                            schedule: { "$push": "$schedule" }
+                        }
+                    },
                     {
                         $project: {
-                            _id: 0,
-                            id: "$_id",
-                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
-                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                            "_id": 0,
+                            "weekday": "$_id.name",
+                            "schedule": {
+                                "$map": {
+                                    input: "$schedule",
+                                    as: "time",
+                                    in: {
+                                        $cond: {
+                                            if: { $eq: ["$$time.init_time", null] },
+                                            then: "$$time",
+                                            else: {
+                                                "id": "$$time._id",
+                                                "init_time": { $dateToString: { format: '%H:%M:%S', date: "$$time.init_time" } },
+                                                "final_time": { $dateToString: { format: '%H:%M:%S', date: "$$time.final_time" } }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                         }
                     }
                 ]);
@@ -278,6 +338,25 @@ const CommercialBookingType = new GraphQLObjectType({
     })
 });
 
+const CommercialPortfolioType = new GraphQLObjectType({
+    name: 'Commercial_Portfolio',
+    description: 'Modelo de Portafolio de Productos por Establecimiento',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        description: { type: GraphQLString },
+        price: { type: GraphQLFloat },
+        image: { type: GraphQLString },
+        establishment: {
+            type: CommercialEstablishmentType,
+            description: 'Objeto del Modelo de Establecimiento',
+            async resolve(parent, args) {
+                return await modelCommEstablishment.findOne({ "_id": parent.commercialID });
+            }
+        }
+    })
+});
+
 const CommercialLogin = new GraphQLObjectType({
     name: "Login",
     description: "Modelo Login Usuarios",
@@ -317,5 +396,7 @@ module.exports = {
     UserType,
     CommercialBookingType,
     CommercialLogin,
-    ImageFile
+    ImageFile,
+    WeekdayType,
+    CommercialPortfolioType
 };

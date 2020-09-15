@@ -36,49 +36,6 @@ const server = new ApolloServer({
         message: err.message,
         code: err.extensions.code,
         stack: (process.env.NODE_ENV === 'production') ? err.extensions.exception.stacktrace : 'PRODUCTION'
-
-        // err = JSON.stringify(err);
-
-        // return ({
-        //     message: err.message,
-        //     code: err.extensions.code,
-        //     stack: (process.env.NODE_ENV === 'production') ? err.extensions.exception.stacktrace : 'PRODUCTION'
-        // });
-
-        // console.log(err);
-
-        // if (err.originalError instanceof AuthenticationError) {
-        //     return new ApolloError('Authentication');
-        // }
-
-        // if (err.originalError instanceof ForbiddenError) {
-        //     return new ApolloError('ForbiddenError');
-        // }
-
-        // if (err.originalError instanceof SchemaError) {
-        //     return new ApolloError('Authentication');
-        // }
-
-        // if (err.originalError instanceof SchemaError) {
-        //     return new ApolloError('SchemaError');
-        // }
-
-        // if (err.originalError instanceof UserInputError) {
-        //     return new ApolloError('UserInputError');
-        // }
-
-        // if (err.originalError instanceof ValidationError) {
-        //     return new ApolloError('ValidationError');
-        // }
-        // if (err.message.includes("validation failed")) {
-        //     return ({ message: err.message, statusCode: 409 });
-        // }
-
-        // if (err.message.includes("ObjectId failed")) {
-        //     return ({ message: 'Clave Primaria no es válida : ' + err.message, statusCode: 409 });
-        // }
-
-        // return ({ message: err.message, code: err.extensions.code || 500 });
     }),
     context: req => ({...req }),
 });

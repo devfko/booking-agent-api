@@ -13,6 +13,11 @@ const commScheduleSchema = new Schema({
         ref: 'Schedules',
         required: true
     },
+    weekdayID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Weekday',
+        required: true
+    },
     created_at: {
         type: Date,
         default: Date.now
@@ -26,7 +31,8 @@ commScheduleSchema.plugin(uniqueValidator, {
 
 commScheduleSchema.index({
     commercialID: 1,
-    scheduleID: 1
+    scheduleID: 1,
+    weekdayID: 1
 }, { unique: true });
 
 module.exports = mongoose.model('Commercial_Schedule', commScheduleSchema);

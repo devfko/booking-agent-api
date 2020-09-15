@@ -23,6 +23,10 @@ const addCommercialSchedule = {
         scheduleID: {
             type: GraphQLNonNull(GraphQLID),
             description: 'ID del Horario de Atención'
+        },
+        weekdayID: {
+            type: GraphQLNonNull(GraphQLID),
+            description: 'ID del Día de la Semana'
         }
     },
     async resolve(parent, args) {
