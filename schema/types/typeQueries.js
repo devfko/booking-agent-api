@@ -6,11 +6,11 @@ const modelCountry = require('../../models/country');
 const modelDepartment = require('../../models/department');
 const modelCity = require('../../models/city');
 const modelSchedule = require('../../models/schedule');
-const modelCommCategory = require('../../models/commercial_category');
-const modelCommEstablishment = require('../../models/commercial_establishment');
-const modelCommSchedule = require('../../models/commercial_schedule');
+const modelCommCategory = require('../../models/categoryEstablishment');
+const modelCommEstablishment = require('../../models/establishment');
+const modelCommSchedule = require('../../models/scheduleEstablishment');
 const modelUser = require('../../models/user');
-const modelBooking = require('../../models/commercial_booking');
+const modelBooking = require('../../models/bookingEstablishment');
 
 const {
     GraphQLObjectType,
@@ -30,15 +30,11 @@ const CountryType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        department: {
+        departments: {
             type: new GraphQLList(DepartmentType),
             async resolve(parent, args) {
                 return await modelDepartment.find({ countryID: parent.id });
             }
-        },
-        token: {
-            type: GraphQLString,
-            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -60,10 +56,6 @@ const DepartmentType = new GraphQLObjectType({
             async resolve(parent, args) {
                 return await modelCity.find({ "departmentID": new mongoose.Types.ObjectId(parent.id) });
             }
-        },
-        token: {
-            type: GraphQLString,
-            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -79,10 +71,6 @@ const CityType = new GraphQLObjectType({
             async resolve(parent, args) {
                 return await modelDepartment.findById(parent.departmentID);
             }
-        },
-        token: {
-            type: GraphQLString,
-            description: 'Token de Autorización de Creación de Parámetros'
         }
     })
 });
@@ -92,7 +80,8 @@ const WeekdayType = new GraphQLObjectType({
     description: 'Modelo de dias de la semana',
     fields: () => ({
         id: { type: GraphQLID },
-        name: { type: GraphQLString }
+        name: { type: GraphQLString },
+        order: { type: GraphQLFloat }
     })
 });
 
@@ -102,11 +91,7 @@ const ScheduleType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         init_time: { type: GraphQLString },
-        final_time: { type: GraphQLString },
-        token: {
-            type: GraphQLString,
-            description: 'Token de Autorización de Creación de Parámetros'
-        }
+        final_time: { type: GraphQLString }
     })
 });
 
@@ -116,11 +101,7 @@ const CommercialCategoryType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        url: { type: GraphQLString, description: 'Url imagen icono de la categoria' },
-        token: {
-            type: GraphQLString,
-            description: 'Token de Autorización de Creación de Parámetros'
-        }
+        url: { type: GraphQLString, description: 'Url imagen icono de la categoria' }
     })
 });
 
@@ -160,7 +141,7 @@ const CommercialEstablishmentType = new GraphQLObjectType({
 
                 return await modelSchedule.aggregate([{
                         $lookup: {
-                            from: "commercial_schedules",
+                            from: "scheduleestablishments",
                             localField: "_id",
                             foreignField: "scheduleID",
                             as: "schedules"
@@ -223,7 +204,7 @@ const CommercialScheduleType = new GraphQLObjectType({
                     {
                         $lookup: {
                             localField: "weekday._id",
-                            from: "commercial_schedules",
+                            from: "scheduleestablishments",
                             foreignField: "weekdayID",
                             as: "commSchedule"
                         }

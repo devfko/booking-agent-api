@@ -7,39 +7,39 @@ const { addCountry } = require('./mutations/country');
 const { addDepartment } = require('./mutations/department');
 const { addCity } = require('./mutations/city');
 const { addWeekday } = require('./mutations/weekday');
-const { addPortfolio } = require('./mutations/commercial_portfolio');
-const { addCommercialCategory } = require('./mutations/commercial_category');
+const { addCategoryEstablishment } = require('./mutations/categoryEstablishment');
 const {
-    addCommercialEstablishment,
-    editCommercialEstablishment,
-    loginCommercialEstablishment,
+    addEstablishment,
+    editEstablishment,
+    loginEstablishment,
     singleImageEstablishment,
     multipleImageTesting
-} = require('./mutations/commercial_establishment');
-const { addCommercialSchedule } = require('./mutations/commercial_schedule');
+} = require('./mutations/establishment');
 const { addUser, editUser } = require('./mutations/user');
-const { addCommercialBooking, editCommercialBooking } = require('./mutations/commercial_booking');
+const { addProductEstablishment } = require('./mutations/productEstablishment');
+const { addScheduleEstablishment } = require('./mutations/scheduleEstablishment');
+const { addBookingUser, editBookingUser } = require('./mutations/bookingEstablishment');
 
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-        addSchedule,
         addCountry,
         addDepartment,
         addCity,
-        addCommercialCategory,
-        addCommercialEstablishment,
-        editCommercialEstablishment,
-        loginCommercialEstablishment,
-        addCommercialSchedule,
+        addSchedule,
+        addWeekday,
+        addCategoryEstablishment,
+        addEstablishment,
+        editEstablishment,
+        loginEstablishment,
         addUser,
         editUser,
-        addCommercialBooking,
-        editCommercialBooking,
-        singleImageEstablishment,
-        multipleImageTesting,
-        addWeekday,
-        addPortfolio
+        addProductEstablishment,
+        addScheduleEstablishment,
+        addBookingUser,
+        editBookingUser,
+        // singleImageEstablishment,
+        // multipleImageTesting,
     }
 });
 

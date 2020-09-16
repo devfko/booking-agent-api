@@ -8,7 +8,7 @@ const {
     GraphQLID
 } = graphql;
 
-const modelUser = mongoose.model('User');
+const modelUser = mongoose.model('user');
 
 const addUser = {
     type: typeDefs.UserType,

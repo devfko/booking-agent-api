@@ -131,4 +131,4 @@ commEstablishmentSchema.pre('findOneAndUpdate', async function(next) {
 //     }
 // });
 
-module.exports = mongoose.model('Commercial_Establishment', commEstablishmentSchema);
+module.exports = mongoose.model('establishment', commEstablishmentSchema);

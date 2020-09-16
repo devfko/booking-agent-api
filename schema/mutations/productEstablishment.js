@@ -8,11 +8,11 @@ const {
     GraphQLID
 } = graphql;
 
-const modelCommPortfolio = mongoose.model('Commercial_portfolio');
+const modelCommPortfolio = mongoose.model('productEstablishment');
 
-const addPortfolio = {
+const addProductEstablishment = {
     type: typeDefs.CommercialPortfolioType,
-    description: 'Creación de Productos por Establecimientos',
+    description: 'Creación de Productos del Establecimiento',
     args: {
         name: { type: GraphQLNonNull(GraphQLString) },
         price: { type: GraphQLNonNull(graphql.GraphQLFloat) },
@@ -25,12 +25,12 @@ const addPortfolio = {
     },
     async resolve(parent, args) {
 
-        let portfolio = new modelCommPortfolio({
+        let product = new modelCommPortfolio({
             ...args
         });
 
-        return portfolio.save();
+        return product.save();
     }
 };
 
-module.exports = { addPortfolio };
+module.exports = { addProductEstablishment };

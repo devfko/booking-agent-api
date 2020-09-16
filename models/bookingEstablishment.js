@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const { generarHash } = require('../util/bcrypt');
 const uniqueValidator = require('mongoose-unique-validator');
 
-const commBookingSchema = new Schema({
+const bookingSchema = new Schema({
     userID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -11,7 +11,7 @@ const commBookingSchema = new Schema({
     },
     commercialID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Commercial_Establishment',
+        ref: 'establishment',
         required: true
     },
     state: {
@@ -47,14 +47,14 @@ const commBookingSchema = new Schema({
     }
 });
 
-commBookingSchema.plugin(uniqueValidator, {
+bookingSchema.plugin(uniqueValidator, {
     code: 409,
     message: 'El {PATH} ya se encuentra registrado'
 });
 
-commBookingSchema.index({
+bookingSchema.index({
     date: 1,
     time: 1
 }, { unique: true });
 
-module.exports = mongoose.model('Commercial_Booking', commBookingSchema);
+module.exports = mongoose.model('bookingEstablishment', bookingSchema);

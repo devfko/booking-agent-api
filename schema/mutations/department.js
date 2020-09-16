@@ -9,7 +9,7 @@ const {
     GraphQLID
 } = graphql;
 
-const modelDepartment = mongoose.model('Department');
+const modelDepartment = mongoose.model('department');
 
 const addDepartment = {
     type: typeDefs.DepartmentType,

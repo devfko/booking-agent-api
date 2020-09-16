@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const modelCommEstablishment = mongoose.model('Commercial_Establishment');
-const modelToken = mongoose.model('Token');
+const modelCommEstablishment = mongoose.model('establishment');
+const modelToken = mongoose.model('token');
 
 module.exports = {
     confirmationToken: function(req, resp, next) {

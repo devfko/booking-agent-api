@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const uniqueValidator = require('mongoose-unique-validator');
 
-const portfolioSchema = new Schema({
+const productSchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -30,14 +30,14 @@ const portfolioSchema = new Schema({
     }
 });
 
-portfolioSchema.plugin(uniqueValidator, {
+productSchema.plugin(uniqueValidator, {
     code: 409,
     message: 'El producto {PATH} ya se encuentra registrado'
 });
 
-portfolioSchema.index({
+productSchema.index({
     commercialID: 1,
     name: 1
 }, { unique: true });
 
-module.exports = mongoose.model('Commercial_portfolio', portfolioSchema);
+module.exports = mongoose.model('productEstablishment', productSchema);

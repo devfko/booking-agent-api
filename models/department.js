@@ -10,7 +10,7 @@ const departmentSchema = new Schema({
     },
     countryID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Country'
+        ref: 'country'
     },
     created_at: {
         type: Date,
@@ -23,4 +23,4 @@ departmentSchema.plugin(uniqueValidator, {
     message: 'El Departamento {PATH} ya se encuentra registrado'
 });
 
-module.exports = mongoose.model('Department', departmentSchema);
+module.exports = mongoose.model('department', departmentSchema);

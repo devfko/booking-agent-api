@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const uniqueValidator = require('mongoose-unique-validator');
 
-const commCategorySchema = new Schema({
+const categorySchema = new Schema({
     name: {
         type: String,
         trim: true,
@@ -21,9 +21,9 @@ const commCategorySchema = new Schema({
     }
 });
 
-commCategorySchema.plugin(uniqueValidator, {
+categorySchema.plugin(uniqueValidator, {
     code: 409,
     message: 'La categoria {PATH} ya se encuentra registrada'
 });
 
-module.exports = mongoose.model('Commercial_Category', commCategorySchema);
+module.exports = mongoose.model('categoryEstablishment', categorySchema);

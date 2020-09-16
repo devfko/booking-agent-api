@@ -10,7 +10,7 @@ const citySchema = new Schema({
     },
     departmentID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Department',
+        ref: 'department',
         required: true
     },
     created_at: {
@@ -24,4 +24,4 @@ citySchema.plugin(uniqueValidator, {
     message: 'La ciudad {PATH} ya se encuentra registrada'
 });
 
-module.exports = mongoose.model('City', citySchema);
+module.exports = mongoose.model('city', citySchema);

@@ -5,10 +5,11 @@ const { validatorHash } = require('../../util/bcrypt');
 
 const {
     GraphQLString,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLFloat
 } = graphql;
 
-const modelWeekday = mongoose.model('Weekday');
+const modelWeekday = mongoose.model('weekday');
 
 const addWeekday = {
     name: 'Weekday',
@@ -16,6 +17,7 @@ const addWeekday = {
     description: 'Creación de Dias de la Semana',
     args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
+        order: { type: new GraphQLNonNull(GraphQLFloat) },
         token: { type: new GraphQLNonNull(GraphQLString) }
     },
     async resolve(parent, args) {
@@ -27,7 +29,8 @@ const addWeekday = {
         }
 
         let weekday = new modelWeekday({
-            name: args.name
+            name: args.name,
+            order: args.order
         });
 
         return weekday.save();

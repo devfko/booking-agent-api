@@ -21,9 +21,9 @@ const {
 const { GraphQLUpload } = require('graphql-upload');
 const { ImageFile } = require('../types/typeQueries');
 
-const modelCommEstablishment = mongoose.model('Commercial_Establishment');
+const modelCommEstablishment = mongoose.model('establishment');
 
-const addCommercialEstablishment = {
+const addEstablishment = {
     type: typeDefs.CommercialEstablishmentType,
     description: 'Creación de Establecimientos Comerciales',
     args: {
@@ -60,9 +60,9 @@ const addCommercialEstablishment = {
     }
 };
 
-const editCommercialEstablishment = {
+const editEstablishment = {
     type: typeDefs.CommercialEstablishmentType,
-    description: 'Modificación de Establecimientos Comerciales',
+    description: 'Modificación del Establecimiento Comercial',
     args: {
         id: { type: GraphQLNonNull(GraphQLID) },
         name: { type: GraphQLNonNull(GraphQLString) },
@@ -104,14 +104,13 @@ const editCommercialEstablishment = {
             });
         } else {
             return {};
-            // return modelCommEstablishment.find({ name: 'token_exit_forced' });
         }
     }
 };
 
-const loginCommercialEstablishment = {
+const loginEstablishment = {
     type: typeDefs.CommercialLogin,
-    description: 'Login Establecimientos Comerciales',
+    description: 'Login del Establecimiento Comercial',
     args: {
         email: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) }
@@ -136,61 +135,61 @@ const loginCommercialEstablishment = {
     }
 };
 
-const singleImageEstablishment = {
-    // type: typeDefs.ImageFile,
-    type: typeDefs.CommercialEstablishmentType,
-    description: 'Update Image for Commercial Establishment.',
-    args: {
-        file: {
-            description: 'File to store.',
-            type: GraphQLNonNull(GraphQLUpload),
-        },
-        commercialID: { type: GraphQLID },
-    },
-    async resolve(parent, args) {
+// const singleImageEstablishment = {
+//     // type: typeDefs.ImageFile,
+//     type: typeDefs.CommercialEstablishmentType,
+//     description: 'Update Image for Commercial Establishment.',
+//     args: {
+//         file: {
+//             description: 'File to store.',
+//             type: GraphQLNonNull(GraphQLUpload),
+//         },
+//         commercialID: { type: GraphQLID },
+//     },
+//     async resolve(parent, args) {
 
-        const result = await cloudinaryStoreUpload(args.file);
-        console.log('path : ', result.path);
+//         const result = await cloudinaryStoreUpload(args.file);
+//         console.log('path : ', result.path);
 
-        return new Promise((resolve, reject) => {
-            modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
-                if (err) reject(err);
-                else {
-                    console.log(resp);
-                    resolve(resp);
-                }
-            });
-        });
-    }
-};
+//         return new Promise((resolve, reject) => {
+//             modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
+//                 if (err) reject(err);
+//                 else {
+//                     console.log(resp);
+//                     resolve(resp);
+//                 }
+//             });
+//         });
+//     }
+// };
 
-const multipleImageTesting = {
-    // type: typeDefs.CommercialEstablishmentType,
-    type: GraphQLNonNull(GraphQLList(GraphQLNonNull(typeDefs.ImageFile))),
-    description: 'Stores a single file.',
-    args: {
-        files: {
-            description: 'File to store.',
-            type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLUpload))),
-        },
-        commercialID: { type: GraphQLID },
-    },
-    async resolve(parent, args) {
+// const multipleImageTesting = {
+//     // type: typeDefs.CommercialEstablishmentType,
+//     type: GraphQLNonNull(GraphQLList(GraphQLNonNull(typeDefs.ImageFile))),
+//     description: 'Stores a single file.',
+//     args: {
+//         files: {
+//             description: 'File to store.',
+//             type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLUpload))),
+//         },
+//         commercialID: { type: GraphQLID },
+//     },
+//     async resolve(parent, args) {
 
-        const results = await Promise.allSettled(args.files.map(storeUpload));
-        return results.reduce((storedFiles, { value, reason }) => {
-            if (value) storedFiles.push(value);
-            // Realistically you would do more than just log an error.
-            else console.error(`Failed to store upload: ${reason}`);
-            return storedFiles;
-        }, []);
-    }
-};
+//         const results = await Promise.allSettled(args.files.map(storeUpload));
+//         return results.reduce((storedFiles, { value, reason }) => {
+//             if (value) storedFiles.push(value);
+//             // Realistically you would do more than just log an error.
+//             else console.error(`Failed to store upload: ${reason}`);
+//             return storedFiles;
+//         }, []);
+//     }
+// };
 
 module.exports = {
-    addCommercialEstablishment,
-    editCommercialEstablishment,
-    loginCommercialEstablishment,
-    singleImageEstablishment,
-    multipleImageTesting
+    addEstablishment,
+    editEstablishment,
+    loginEstablishment,
+    // singleImageEstablishment,
+    // multipleImageTesting
 };

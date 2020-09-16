@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const tokenSchema = new Schema({
     commercialID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Commercial_Establishment',
+        ref: 'establishment',
         required: true
     },
     token: {
@@ -18,4 +18,4 @@ const tokenSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Token', tokenSchema);
+module.exports = mongoose.model('token', tokenSchema);

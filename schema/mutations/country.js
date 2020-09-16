@@ -8,7 +8,7 @@ const {
     GraphQLNonNull
 } = graphql;
 
-const modelCountry = mongoose.model('Country');
+const modelCountry = mongoose.model('country');
 
 const addCountry = {
     name: 'Country',

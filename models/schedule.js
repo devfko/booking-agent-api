@@ -29,4 +29,4 @@ scheduleSchema.index({
     final_time: 1
 }, { unique: true });
 
-module.exports = mongoose.model('Schedules', scheduleSchema);
+module.exports = mongoose.model('schedule', scheduleSchema);

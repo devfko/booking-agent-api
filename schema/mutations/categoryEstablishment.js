@@ -9,9 +9,9 @@ const {
     GraphQLID
 } = graphql;
 
-const modelCommCategory = mongoose.model('Commercial_Category');
+const modelCommCategory = mongoose.model('categoryEstablishment');
 
-const addCommercialCategory = {
+const addCategoryEstablishment = {
     type: typeDefs.CommercialCategoryType,
     description: 'Creación de Categorias de Establecimientos',
     args: {
@@ -36,4 +36,4 @@ const addCommercialCategory = {
     }
 };
 
-module.exports = { addCommercialCategory };
+module.exports = { addCategoryEstablishment };

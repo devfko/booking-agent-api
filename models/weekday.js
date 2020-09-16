@@ -8,6 +8,11 @@ const weekdaySchema = new Schema({
         required: true,
         unique: true
     },
+    order: {
+        type: Number,
+        required: true,
+        unique: true
+    },
     created_at: {
         type: Date,
         default: Date.now
@@ -19,4 +24,4 @@ weekdaySchema.plugin(uniqueValidator, {
     message: 'El dia se la Semana {PATH} ya se encuentra registrado'
 });
 
-module.exports = mongoose.model('Weekday', weekdaySchema);
+module.exports = mongoose.model('weekday', weekdaySchema);

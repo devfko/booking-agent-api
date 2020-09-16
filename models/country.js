@@ -19,4 +19,4 @@ countrySchema.plugin(uniqueValidator, {
     message: 'El Pais {PATH} ya se encuentra registrado'
 });
 
-module.exports = mongoose.model('Country', countrySchema);
+module.exports = mongoose.model('country', countrySchema);

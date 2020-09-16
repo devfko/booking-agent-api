@@ -16,10 +16,10 @@ const {
     GraphQLFloat
 } = graphql;
 
-const modelCommBooking = mongoose.model('Commercial_Booking');
+const modelCommBooking = mongoose.model('bookingEstablishment');
 const BOOKING_ADDED_TOPIC = 'BOOKING_ADDED_TOPIC';
 
-const addCommercialBooking = {
+const addBookingUser = {
     type: typeDefs.CommercialBookingType,
     description: 'Creación de Reservas de un Usuario con un Establecimiento Comercial',
     args: {
@@ -38,7 +38,8 @@ const addCommercialBooking = {
     },
     async resolve(parent, args) {
         moment.locale('es');
-        let dateTime = new Date(args.date + ' ' + args.time);
+        let dateTime = new Date(args.date + " " + args.time);
+
         if (moment(dateTime).isValid()) {
             let booking = new modelCommBooking({
                 date: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
@@ -60,13 +61,13 @@ const addCommercialBooking = {
             });
             return operation;
         } else {
-            return modelCommBooking;
+            return {};
         }
 
     }
 };
 
-const editCommercialBooking = {
+const editBookingUser = {
     type: typeDefs.CommercialBookingType,
     description: 'Modificación de Reservas realizadas',
     args: {
@@ -118,6 +119,6 @@ const editCommercialBooking = {
 };
 
 module.exports = {
-    addCommercialBooking,
-    editCommercialBooking
+    addBookingUser,
+    editBookingUser
 };

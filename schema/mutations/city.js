@@ -9,7 +9,7 @@ const {
     GraphQLID
 } = graphql;
 
-const modelCity = mongoose.model('City');
+const modelCity = mongoose.model('city');
 
 const addCity = {
     type: typeDefs.CityType,

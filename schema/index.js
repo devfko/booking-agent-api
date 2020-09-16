@@ -5,10 +5,10 @@ const BOOKING_ADDED_TOPIC = 'BOOKING_ADDED_TOPIC';
 
 const RootQuery = require('./query');
 const Mutation = require('./mutation');
-const Subscription = require('./subscription');
+// const Subscription = require('./subscription');
 
 module.exports = new GraphQLSchema({
     query: RootQuery,
     mutation: Mutation,
-    subscription: Subscription
+    // subscription: Subscription
 });

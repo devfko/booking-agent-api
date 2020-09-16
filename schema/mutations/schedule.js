@@ -9,7 +9,7 @@ const {
     GraphQLNonNull
 } = graphql;
 
-const modelSchedule = mongoose.model('Schedules');
+const modelSchedule = mongoose.model('schedule');
 
 const addSchedule = {
     name: 'Schedule',

@@ -10,9 +10,9 @@ const {
     GraphQLInt
 } = graphql;
 
-const modelCommSchedule = mongoose.model('Commercial_Schedule');
+const modelCommSchedule = mongoose.model('scheduleEstablishment');
 
-const addCommercialSchedule = {
+const addScheduleEstablishment = {
     type: typeDefs.CommercialScheduleType,
     description: 'Creación de Horarios de Atención de un Establecimiento Comercial',
     args: {
@@ -38,4 +38,4 @@ const addCommercialSchedule = {
     }
 };
 
-module.exports = { addCommercialSchedule };
+module.exports = { addScheduleEstablishment };
