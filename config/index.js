@@ -23,7 +23,9 @@ const cloudinaryConfig = {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
     estabishmentWidth: process.env.CLOUDINARY_ESTABLISHMENT_WIDTH,
-    establishmentHeigth: process.env.CLOUDINARY_ESTABLISHMENT_HEIGTH
+    establishmentHeigth: process.env.CLOUDINARY_ESTABLISHMENT_HEIGTH,
+    folderLogos: process.env.CLOUDINARY_FOLDER_LOGOS,
+    folderImages: process.env.CLOUDINARY_FOLDER_IMAGES,
 };
 
 module.exports = { config, cloudinaryConfig };

@@ -45,7 +45,7 @@ const storeUpload = async(upload) => {
     return file;
 };
 
-const cloudinaryStoreUpload = async(upload) => {
+const cloudinaryStoreUpload = async(upload, pathImage) => {
 
     const { createReadStream, filename, mimetype } = await upload;
     const stream = createReadStream();
@@ -57,10 +57,10 @@ const cloudinaryStoreUpload = async(upload) => {
             await new Promise((resolve, reject) => {
                 const streamLoad = cloudinary.uploader.upload_stream({
                     width: cloudinaryConfig.estabishmentWidth,
-                    height: cloudinaryConfig.establishmentHeigth
+                    height: cloudinaryConfig.establishmentHeigth,
+                    folder: pathImage
                 }, function(err, result) {
                     if (result) {
-                        // console.log({ result });
                         file.path = result.url;
                         resolve();
                     } else {
@@ -76,7 +76,6 @@ const cloudinaryStoreUpload = async(upload) => {
     };
 
     await cloudinaryUpload({ stream });
-    console.log('file : ', file);
 
     return file;
 };

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { config } = require('../../config');
+const { config, cloudinaryConfig } = require('../../config');
 const validateToken = require('../../util/token/tokens');
 const { storeUpload, cloudinaryStoreUpload } = require('../../util/uploads/storeFS');
 
@@ -32,7 +32,7 @@ const addEstablishment = {
         password: { type: GraphQLNonNull(GraphQLString) },
         address: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLString },
-        logo: { type: GraphQLString },
+        logo: { description: 'File to store.', type: GraphQLUpload },
         phone: { type: GraphQLString },
         active: { type: GraphQLBoolean },
         capacity: { type: GraphQLInt },
@@ -47,6 +47,14 @@ const addEstablishment = {
         }
     },
     async resolve(parent, args) {
+
+        // Se almacena la imagen antes de editar la información, para así obtener el urlPath
+        if (args.logo) {
+            const result = await cloudinaryStoreUpload(args.logo, cloudinaryConfig.folderLogos);
+            if (result.path != "") {
+                args.logo = result.path;
+            }
+        }
 
         let establishment = new modelCommEstablishment({
             ...args
@@ -70,7 +78,7 @@ const editEstablishment = {
         password: { type: GraphQLNonNull(GraphQLString) },
         address: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLString },
-        logo: { type: GraphQLString },
+        logo: { description: 'File to store.', type: GraphQLUpload },
         phone: { type: GraphQLString },
         active: { type: GraphQLBoolean },
         capacity: { type: GraphQLInt },
@@ -94,6 +102,14 @@ const editEstablishment = {
             if (verifiedToken[0]._id != args.id) {
                 // return modelCommEstablishment.find({ name: 'token_exit_forced' });
                 return {};
+            }
+
+            // Se almacena la imagen antes de editar la información, para así obtener el urlPath
+            if (args.logo) {
+                const result = await cloudinaryStoreUpload(args.logo, cloudinaryConfig.folderLogos);
+                if (result.path != "") {
+                    args.logo = result.path;
+                }
             }
 
             return new Promise((resolve, reject) => {
@@ -135,33 +151,33 @@ const loginEstablishment = {
     }
 };
 
-// const singleImageEstablishment = {
-//     // type: typeDefs.ImageFile,
-//     type: typeDefs.CommercialEstablishmentType,
-//     description: 'Update Image for Commercial Establishment.',
-//     args: {
-//         file: {
-//             description: 'File to store.',
-//             type: GraphQLNonNull(GraphQLUpload),
-//         },
-//         commercialID: { type: GraphQLID },
-//     },
-//     async resolve(parent, args) {
+const logoEstablishment = {
+    // type: typeDefs.ImageFile,
+    type: typeDefs.CommercialEstablishmentType,
+    description: 'Update Image for Commercial Establishment.',
+    args: {
+        file: {
+            description: 'File to store.',
+            type: GraphQLNonNull(GraphQLUpload),
+        },
+        commercialID: { type: GraphQLID },
+    },
+    async resolve(parent, args) {
 
-//         const result = await cloudinaryStoreUpload(args.file);
-//         console.log('path : ', result.path);
+        const result = await cloudinaryStoreUpload(args.file, cloudinaryConfig.folderLogos);
+        // console.log('path : ', result.path);
 
-//         return new Promise((resolve, reject) => {
-//             modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
-//                 if (err) reject(err);
-//                 else {
-//                     console.log(resp);
-//                     resolve(resp);
-//                 }
-//             });
-//         });
-//     }
-// };
+        return new Promise((resolve, reject) => {
+            modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
+                if (err) reject(err);
+                else {
+                    console.log(resp);
+                    resolve(resp);
+                }
+            });
+        });
+    }
+};
 
 // const multipleImageTesting = {
 //     // type: typeDefs.CommercialEstablishmentType,
@@ -190,6 +206,6 @@ module.exports = {
     addEstablishment,
     editEstablishment,
     loginEstablishment,
-    // singleImageEstablishment,
+    logoEstablishment,
     // multipleImageTesting
 };
