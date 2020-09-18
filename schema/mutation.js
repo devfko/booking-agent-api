@@ -16,7 +16,7 @@ const {
     multipleImageTesting
 } = require('./mutations/establishment');
 const { addUser, editUser } = require('./mutations/user');
-const { addProductEstablishment } = require('./mutations/productEstablishment');
+const { addProductEstablishment, editProductEstablishment } = require('./mutations/productEstablishment');
 const { addScheduleEstablishment } = require('./mutations/scheduleEstablishment');
 const { addBookingUser, editBookingUser } = require('./mutations/bookingEstablishment');
 
@@ -35,6 +35,7 @@ const Mutation = new GraphQLObjectType({
         addUser,
         editUser,
         addProductEstablishment,
+        editProductEstablishment,
         addScheduleEstablishment,
         addBookingUser,
         editBookingUser,

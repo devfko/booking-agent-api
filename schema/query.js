@@ -2,7 +2,8 @@ const {
     UserInputError,
     AuthenticationError,
     ForbiddenError,
-    ValidationError
+    ValidationError,
+    ApolloError
 } = require('apollo-server-express');
 
 const graphql = require('graphql');
@@ -46,7 +47,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCity.findById(args.id);
                 } catch (err) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -57,7 +58,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCity.find({}).sort({ name: 1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -69,7 +70,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelDepartment.findById(args.id);
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -80,7 +81,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelDepartment.find({}).sort({ name: 1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -92,7 +93,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCountry.findById(args.id);
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -103,7 +104,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCountry.find({}).sort({ name: 1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -114,7 +115,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelWeekday.find({}).sort({ order: 1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -137,7 +138,7 @@ const RootQuery = new GraphQLObjectType({
                         }
                     ]);
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -157,7 +158,7 @@ const RootQuery = new GraphQLObjectType({
                         { $sort: { init_time: 1 } }
                     ]);
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -173,7 +174,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCommCategory.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -184,7 +185,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCommCategory.find({}).sort({ name: 1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -200,7 +201,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCommEstablishment.findOne({ $or: [{ _id: args.id }, { name: { $regex: likeStr, $options: "i" } }] });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -250,7 +251,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCommEstablishment.find(query).sort({ name: 1, active: -1 });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -265,7 +266,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelUser.findOne({ $or: [{ _id: args.id }, { email: args.email }] });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -289,7 +290,7 @@ const RootQuery = new GraphQLObjectType({
                 try {
                     return await modelCommSchedule.findOne({ commercialID: args.commercialID });
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Bad Request", "400");
                 }
             }
         },
@@ -301,6 +302,7 @@ const RootQuery = new GraphQLObjectType({
                 userID: { type: GraphQLID },
             },
             async resolve(parent, args, context) {
+
                 try {
 
                     let verifiedToken = await validateToken.extractToken(context.req);
@@ -309,9 +311,8 @@ const RootQuery = new GraphQLObjectType({
 
                         // Se válida que el _id del token corresponda con el filtro ingresado de Establecimiento o del Usuario
                         if (verifiedToken[0]._id != args.commercialID && verifiedToken[0]._id != args.userID) {
-                            return modelCommBooking.find({ name: 'token_exit_forced' });
+                            throw new ApolloError("Unauthorized", "401");
                         }
-
                         return await modelCommBooking.aggregate([{
                                 $match: {
                                     $or: [
@@ -337,13 +338,10 @@ const RootQuery = new GraphQLObjectType({
                             }
                         ]);
                     } else {
-                        console.log('-fucking');
-                        console.log(verifiedToken);
-
-                        return modelCommBooking.find({ name: 'token_exit_forced' });
+                        throw new ApolloError("Unauthorized", "401");
                     }
                 } catch (error) {
-                    throw new Error({ message: "Error returning results", code: 500 });
+                    throw new ApolloError("Forbidden", "403", error);
                 }
             }
         },

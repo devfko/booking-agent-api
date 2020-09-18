@@ -25,7 +25,7 @@ const {
 } = graphql;
 
 const CountryType = new GraphQLObjectType({
-    name: 'Country',
+    name: 'CountryObject',
     description: 'Modelo de Paises',
     fields: () => ({
         id: { type: GraphQLID },
@@ -40,7 +40,7 @@ const CountryType = new GraphQLObjectType({
 });
 
 const DepartmentType = new GraphQLObjectType({
-    name: 'Department',
+    name: 'DepartmentObject',
     description: 'Modelo de Departamentos',
     fields: () => ({
         id: { type: GraphQLID },
@@ -61,7 +61,7 @@ const DepartmentType = new GraphQLObjectType({
 });
 
 const CityType = new GraphQLObjectType({
-    name: 'City',
+    name: 'CityObject',
     description: 'Modelo de Ciudades',
     fields: () => ({
         id: { type: GraphQLID },
@@ -76,7 +76,7 @@ const CityType = new GraphQLObjectType({
 });
 
 const WeekdayType = new GraphQLObjectType({
-    name: 'Weekday',
+    name: 'WeekdayObject',
     description: 'Modelo de dias de la semana',
     fields: () => ({
         id: { type: GraphQLID },
@@ -86,7 +86,7 @@ const WeekdayType = new GraphQLObjectType({
 });
 
 const ScheduleType = new GraphQLObjectType({
-    name: 'Schedule',
+    name: 'ScheduleObject',
     description: 'Modelo de Horarios de Atención Estandar',
     fields: () => ({
         id: { type: GraphQLID },
@@ -96,7 +96,7 @@ const ScheduleType = new GraphQLObjectType({
 });
 
 const CommercialCategoryType = new GraphQLObjectType({
-    name: 'Commercial_Category',
+    name: 'CategoryObject',
     description: 'Modelo de Categorias de Establecimientos',
     fields: () => ({
         id: { type: GraphQLID },
@@ -106,7 +106,7 @@ const CommercialCategoryType = new GraphQLObjectType({
 });
 
 const CommercialEstablishmentType = new GraphQLObjectType({
-    name: 'Commercial_Establishment',
+    name: 'EstablishmentObject',
     description: 'Modelo de Establecimientos Comerciales',
     fields: () => ({
         id: { type: GraphQLID },
@@ -135,36 +135,75 @@ const CommercialEstablishmentType = new GraphQLObjectType({
             }
         },
         schedules: {
-            type: new GraphQLList(ScheduleType),
+            type: GraphQLList(infoScheduleCommType),
             description: 'Objeto del Modelo de Horarios de Atención',
             async resolve(parent, args) {
-
-                return await modelSchedule.aggregate([{
-                        $lookup: {
-                            from: "scheduleestablishments",
-                            localField: "_id",
-                            foreignField: "scheduleID",
-                            as: "schedules"
+                return await modelWeekday.aggregate([{
+                        $project: {
+                            "weekday": "$$ROOT"
                         }
                     },
-                    { $match: { "schedules.commercialID": new mongoose.Types.ObjectId(parent._id) } },
+                    {
+                        $lookup: {
+                            localField: "weekday._id",
+                            from: "scheduleestablishments",
+                            foreignField: "weekdayID",
+                            as: "commSchedule"
+                        }
+                    },
+                    { $match: { "commSchedule.commercialID": new mongoose.Types.ObjectId(parent._id) } },
                     {
                         $unwind: {
-                            path: "$schedules",
+                            path: "$commSchedule",
                             preserveNullAndEmptyArrays: true
                         }
                     },
-                    { $sort: { "init_time": 1 } },
+                    {
+                        $lookup: {
+                            localField: "commSchedule.scheduleID",
+                            from: "schedules",
+                            foreignField: "_id",
+                            as: "schedule"
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: "$schedule",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                name: "$weekday.name",
+                            },
+                            schedule: { "$push": "$schedule" }
+                        }
+                    },
                     {
                         $project: {
-                            _id: 0,
-                            id: "$_id",
-                            init_time: { $dateToString: { format: '%H:%M:%S', date: '$init_time' } },
-                            final_time: { $dateToString: { format: '%H:%M:%S', date: '$final_time' } }
+                            "_id": 0,
+                            "weekday": "$_id.name",
+                            "schedule": {
+                                "$map": {
+                                    input: "$schedule",
+                                    as: "time",
+                                    in: {
+                                        $cond: {
+                                            if: { $eq: ["$$time.init_time", null] },
+                                            then: "$$time",
+                                            else: {
+                                                "id": "$$time._id",
+                                                "init_time": { $dateToString: { format: '%H:%M:%S', date: "$$time.init_time" } },
+                                                "final_time": { $dateToString: { format: '%H:%M:%S', date: "$$time.final_time" } }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                         }
                     }
                 ]);
-
             }
         }
     })
@@ -180,7 +219,7 @@ const infoScheduleCommType = new GraphQLObjectType({
 });
 
 const CommercialScheduleType = new GraphQLObjectType({
-    name: 'Commercial_Schedule',
+    name: 'ScheduleEstablishmentObject',
     description: 'Modelo de Horarios de Atención por Establecimiento',
     fields: () => ({
         id: { type: GraphQLID },
@@ -268,7 +307,7 @@ const CommercialScheduleType = new GraphQLObjectType({
 });
 
 const UserType = new GraphQLObjectType({
-    name: 'User',
+    name: 'UserObject',
     description: 'Modelo de Usuarios',
     fields: () => ({
         id: { type: GraphQLID },
@@ -282,7 +321,7 @@ const UserType = new GraphQLObjectType({
 });
 
 const CommercialBookingType = new GraphQLObjectType({
-    name: 'Commercial_Booking',
+    name: 'BookingObject',
     description: 'Modelo de Reservas por Establecimiento',
     fields: () => ({
         id: { type: GraphQLID },
@@ -320,7 +359,7 @@ const CommercialBookingType = new GraphQLObjectType({
 });
 
 const CommercialPortfolioType = new GraphQLObjectType({
-    name: 'Commercial_Portfolio',
+    name: 'ProductObject',
     description: 'Modelo de Portafolio de Productos por Establecimiento',
     fields: () => ({
         id: { type: GraphQLID },
@@ -339,7 +378,7 @@ const CommercialPortfolioType = new GraphQLObjectType({
 });
 
 const CommercialLogin = new GraphQLObjectType({
-    name: "Login",
+    name: "LoginObject",
     description: "Modelo Login Usuarios",
     fields: () => ({
         establishment: { type: GraphQLString },
@@ -348,7 +387,7 @@ const CommercialLogin = new GraphQLObjectType({
 });
 
 const ImageFile = new GraphQLObjectType({
-    name: "Photo",
+    name: "LogoObject",
     description: "Modelo Foto-Logo Establecimientos",
     fields: () => ({
         path: {

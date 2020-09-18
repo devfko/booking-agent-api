@@ -31,7 +31,7 @@ const server = new ApolloServer({
     playground: true,
     tracing: true,
     uploads: false,
-    formatError: err => ({
+    formatError: (err) => ({
 
         message: err.message,
         code: err.extensions.code,

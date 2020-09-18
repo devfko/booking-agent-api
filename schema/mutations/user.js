@@ -2,6 +2,8 @@ const graphql = require('graphql');
 const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -26,7 +28,12 @@ const addUser = {
         let newUser = new modelUser({
             ...args
         });
-        return newUser.save();
+
+        try {
+            return newUser.save();
+        } catch (err) {
+            throw new ApolloError("Bad Request", "400");
+        }
 
     }
 };
@@ -46,7 +53,7 @@ const editUser = {
     async resolve(parent, args) {
         return new Promise((resolve, reject) => {
             modelUser.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.id) }, { "$set": args }, { new: true }).exec((err, resp) => {
-                if (err) reject(err);
+                if (err) reject(new ApolloError("Bad Request", "400"));
                 else resolve(resp);
             });
         });

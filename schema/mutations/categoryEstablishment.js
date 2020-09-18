@@ -3,6 +3,8 @@ const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
 const { validatorHash } = require('../../util/bcrypt');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -24,7 +26,7 @@ const addCategoryEstablishment = {
         const resultToken = await validatorHash(args.token);
 
         if (!resultToken) {
-            return {};
+            throw new ApolloError("Unauthorized", "401");
         }
 
         let category = new modelCommCategory({
@@ -32,7 +34,11 @@ const addCategoryEstablishment = {
             url: args.url
         });
 
-        return category.save();
+        try {
+            return category.save();
+        } catch (err) {
+            throw new ApolloError("Bad Request", "400");
+        }
     }
 };
 

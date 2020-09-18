@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
+const validateToken = require('../../util/token/tokens');
 
 const {
     GraphQLString,
@@ -29,12 +30,28 @@ const addScheduleEstablishment = {
             description: 'ID del Día de la Semana'
         }
     },
-    async resolve(parent, args) {
-        let schedule = new modelCommSchedule({
-            ...args
-        });
+    async resolve(parent, args, context) {
+        let verifiedToken = await validateToken.extractToken(context.req);
 
-        return schedule.save();
+        if (verifiedToken[0] !== undefined) {
+
+            // Se valida que el _id del token corresponda con el id del Establecimiento
+            if (verifiedToken[0]._id != args.commercialID) {
+                throw new ApolloError("Unauthorized", "401");
+            }
+
+            let schedule = new modelCommSchedule({
+                ...args
+            });
+
+            try {
+                return schedule.save();
+            } catch (err) {
+                throw new ApolloError("Bad Request", "400");
+            }
+        } else {
+            throw new ApolloError("Unauthorized", "401");
+        }
     }
 };
 

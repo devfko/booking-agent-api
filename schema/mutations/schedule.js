@@ -4,6 +4,8 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const { validatorHash } = require('../../util/bcrypt');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull
@@ -25,7 +27,7 @@ const addSchedule = {
         const resultToken = await validatorHash(args.token);
 
         if (!resultToken) {
-            return {};
+            throw new ApolloError("Unauthorized", "401");
         }
 
         moment.locale('es');
@@ -40,7 +42,7 @@ const addSchedule = {
 
             return schedule.save();
         } else {
-            return modelSchedule;
+            throw new ApolloError("Bad Request", "400");
         }
     }
 };

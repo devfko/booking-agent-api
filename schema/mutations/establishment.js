@@ -8,6 +8,8 @@ const { config, cloudinaryConfig } = require('../../config');
 const validateToken = require('../../util/token/tokens');
 const { storeUpload, cloudinaryStoreUpload } = require('../../util/uploads/storeFS');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -63,7 +65,7 @@ const addEstablishment = {
         try {
             return establishment.save();
         } catch (err) {
-            console.log(err);
+            throw new ApolloError("Bad Request", "400");
         }
     }
 };
@@ -100,8 +102,7 @@ const editEstablishment = {
 
             // Se valida que el _id del token corresponda con el id del Establecimiento que se está modificando
             if (verifiedToken[0]._id != args.id) {
-                // return modelCommEstablishment.find({ name: 'token_exit_forced' });
-                return {};
+                throw new ApolloError("Unauthorized", "401");
             }
 
             // Se almacena la imagen antes de editar la información, para así obtener el urlPath
@@ -114,12 +115,12 @@ const editEstablishment = {
 
             return new Promise((resolve, reject) => {
                 modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.id) }, { "$set": args }, { new: true }).exec((err, resp) => {
-                    if (err) reject(err);
+                    if (err) reject(new ApolloError("Bad Request", "400"));
                     else resolve(resp);
                 });
             });
         } else {
-            return {};
+            throw new ApolloError("Unauthorized", "401");
         }
     }
 };
@@ -146,7 +147,7 @@ const loginEstablishment = {
             }
         }
 
-        return { establishment: 'Usuario y/o Password no válido', token: "" };
+        throw new ApolloError("Forbidden", "403");
 
     }
 };
@@ -169,7 +170,7 @@ const logoEstablishment = {
 
         return new Promise((resolve, reject) => {
             modelCommEstablishment.findOneAndUpdate({ "_id": mongoose.Types.ObjectId(args.commercialID) }, { "$set": { "logo": result.path } }, { new: true }).exec((err, resp) => {
-                if (err) reject(err);
+                if (err) reject(new ApolloError("Bad Request", "400"));
                 else {
                     console.log(resp);
                     resolve(resp);

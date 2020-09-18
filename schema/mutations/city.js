@@ -3,6 +3,8 @@ const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
 const { validatorHash } = require('../../util/bcrypt');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -27,7 +29,7 @@ const addCity = {
         const resultToken = await validatorHash(args.token);
 
         if (!resultToken) {
-            return {};
+            throw new ApolloError("Unauthorized", "401");
         }
 
         let city = new modelCity({
@@ -35,7 +37,11 @@ const addCity = {
             departmentID: args.departmentID
         });
 
-        return city.save();
+        try {
+            return city.save();
+        } catch (err) {
+            throw new ApolloError("Bad Request", "400");
+        }
     }
 };
 

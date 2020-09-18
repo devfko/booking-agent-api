@@ -7,6 +7,8 @@ const { pubsub } = require('../helper');
 const validateToken = require('../../util/token/tokens');
 const genVoucher = require('../../util/generators/voucher');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull,
@@ -38,32 +40,36 @@ const addBookingUser = {
     },
     async resolve(parent, args) {
         moment.locale('es');
-        let dateTime = new Date(args.date + " " + args.time);
 
-        if (moment(dateTime).isValid()) {
-            let booking = new modelCommBooking({
-                date: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
-                time: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
-                commercialID: args.establishment,
-                userID: args.user,
-                price: args.price,
-                quantity: args.quantity,
-                voucher: await genVoucher("shop")
-            });
+        try {
+            let dateTime = new Date(args.date + " " + args.time);
 
-            const operation = await booking.save();
-            await pubsub.publish(BOOKING_ADDED_TOPIC, {
-                newBooking: {
-                    bookingId: operation.id,
-                    state: operation.state,
-                    ...args
-                }
-            });
-            return operation;
-        } else {
-            return {};
+            if (moment(dateTime).isValid()) {
+                let booking = new modelCommBooking({
+                    date: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
+                    time: new Date(dateTime - dateTime.getTimezoneOffset() * 60000),
+                    commercialID: args.establishment,
+                    userID: args.user,
+                    price: args.price,
+                    quantity: args.quantity,
+                    voucher: await genVoucher("shop")
+                });
+
+                const operation = await booking.save();
+                await pubsub.publish(BOOKING_ADDED_TOPIC, {
+                    newBooking: {
+                        bookingId: operation.id,
+                        state: operation.state,
+                        ...args
+                    }
+                });
+                return operation;
+            } else {
+                throw new ApolloError("Bad Request", "400");
+            }
+        } catch (err) {
+            throw new ApolloError("Bad Request", "400");
         }
-
     }
 };
 
@@ -87,7 +93,7 @@ const editBookingUser = {
 
             // Se valida que el _id del token corresponda con el id del Establecimiento al cual se encuentra registrada la reserva
             if (verifiedToken[0]._id != args.commercialID) {
-                return modelCommBooking.find({ name: 'token_exit_forced' });
+                throw new ApolloError("Unauthorized", "401");
             }
 
             moment.locale('es');
@@ -110,10 +116,10 @@ const editBookingUser = {
                     });
                 });
             } else {
-                return modelCommBooking;
+                throw new ApolloError("Bad Request", "400");
             }
         } else {
-            return modelCommBooking.find({ name: 'token_exit_forced' });
+            throw new ApolloError("Forbidden", "403");
         }
     }
 };

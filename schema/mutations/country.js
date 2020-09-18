@@ -3,6 +3,8 @@ const typeDefs = require('../types/typeQueries');
 const mongoose = require('mongoose');
 const { validatorHash } = require('../../util/bcrypt');
 
+const { ApolloError } = require('apollo-server-express');
+
 const {
     GraphQLString,
     GraphQLNonNull
@@ -22,13 +24,18 @@ const addCountry = {
         const resultToken = await validatorHash(args.token);
 
         if (!resultToken) {
-            return {};
+            throw new ApolloError("Unauthorized", "401");
         }
 
         let country = new modelCountry({
             name: args.name
         });
-        return country.save();
+
+        try {
+            return country.save();
+        } catch (err) {
+            throw new ApolloError("Bad Request", "400");
+        }
 
     }
 };

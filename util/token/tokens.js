@@ -12,7 +12,7 @@ function extractToken(req) {
         return new Promise((resolve, reject) => {
             jwt.verify(token, config.loginToken, (err, verifiedJwt) => {
                 if (err) {
-                    console.log(err.message);
+                    // console.log(err.message);
                     // return null;
                     resolve([]);
                 } else {

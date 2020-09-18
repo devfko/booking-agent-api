@@ -16,4 +16,5 @@ npm run start
 ```
 
 ### Author
-> Instagram | [@devfko](https://www.instagram.com/devfko)
+
+![](https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Instagram-16.png) - [@devfko](https://www.instagram.com/devfko/)
