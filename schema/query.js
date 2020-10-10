@@ -345,6 +345,180 @@ const RootQuery = new GraphQLObjectType({
                 }
             }
         },
+        getAvailability: {
+            type: new GraphQLList(typeDefs.AvailableType),
+            description: 'Obtenemos la ocupación del establecimiento de acuerdo al rango de fechas y horario de atención',
+            args: {
+                rangeDate: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
+                commercialID: { type: new GraphQLNonNull(GraphQLID) },
+            },
+            async resolve(parent, args) {
+                let result = [];
+                let acum = 0;
+                let capacity = 0;
+
+                try {
+                    const schedules = await modelCommSchedule.aggregate([{
+                            "$project": {
+                                "_id": 0,
+                                "se": "$$ROOT"
+                            }
+                        },
+                        {
+                            "$lookup": {
+                                "localField": "se.scheduleID",
+                                "from": "schedules",
+                                "foreignField": "_id",
+                                "as": "s"
+                            }
+                        },
+                        {
+                            "$unwind": {
+                                "path": "$s",
+                                "preserveNullAndEmptyArrays": false
+                            }
+                        },
+                        {
+                            "$lookup": {
+                                "localField": "se.commercialID",
+                                "from": "establishments",
+                                "foreignField": "_id",
+                                "as": "e"
+                            }
+                        },
+                        {
+                            "$unwind": {
+                                "path": "$e",
+                                "preserveNullAndEmptyArrays": false
+                            }
+                        },
+                        {
+                            "$match": {
+                                "se.commercialID": new mongoose.Types.ObjectId(args.commercialID)
+                            }
+                        },
+                        {
+                            "$project": {
+                                "initial": { $dateToString: { format: '%H:%M:%S', date: '$s.init_time' } },
+                                "capacity": "$e.capacity",
+                                "_id": 0
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": null,
+                                "distinct": {
+                                    "$addToSet": "$$ROOT"
+                                }
+                            }
+                        },
+                        {
+                            "$unwind": {
+                                "path": "$distinct",
+                                "preserveNullAndEmptyArrays": false
+                            }
+                        },
+                        {
+                            "$replaceRoot": {
+                                "newRoot": "$distinct"
+                            }
+                        },
+                        {
+                            "$sort": {
+                                "s.init_time": 1
+                            }
+                        }
+                    ]);
+
+                    const booking = await modelCommBooking.aggregate([{
+                            "$project": {
+                                "_id": 0,
+                                "booking": "$$ROOT"
+                            }
+                        },
+                        {
+                            "$lookup": {
+                                "localField": "booking.commercialID",
+                                "from": "establishments",
+                                "foreignField": "_id",
+                                "as": "est"
+                            }
+                        },
+                        {
+                            "$unwind": {
+                                "path": "$est",
+                                "preserveNullAndEmptyArrays": false
+                            }
+                        },
+                        {
+                            "$match": {
+                                "booking.commercialID": new mongoose.Types.ObjectId(args.commercialID),
+                                "booking.state": true
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": {
+                                    "booking᎐time": "$booking.time",
+                                    "est᎐capacity": "$est.capacity",
+                                    "booking᎐date": "$booking.date"
+                                },
+                                "COUNT(booking᎐_id)": {
+                                    "$sum": 1
+                                }
+                            }
+                        },
+                        {
+                            "$project": {
+                                "date": { $dateToString: { format: '%Y-%m-%d', date: '$_id.booking᎐date' } },
+                                "time": { $dateToString: { format: '%H:%M:%S', date: '$_id.booking᎐time' } },
+                                "capacity": "$_id.est᎐capacity",
+                                "total": "$COUNT(booking᎐_id)",
+                                "_id": 0
+                            }
+                        }
+                    ]);
+
+                    // it the some array is empty or length 0, then abort the process
+                    if (schedules.length !== 0) {
+                        // && booking.length == 0
+                        //Ordening the result
+                        const rangeDate = args.rangeDate.sort();
+
+                        // For each date range...
+                        for (let i = 0; i < rangeDate.length; i++) {
+                            let dateFilter = rangeDate[i];
+
+                            //We use the cycle of the schedules for the establishment
+                            schedules.forEach((item) => {
+                                acum = 0;
+                                let timeSchedule = item.initial;
+                                let timeFilter = "";
+
+                                //For each time of shcedules, we search and accumulate the coincidences in the booking array
+                                for (let k = 0; k < booking.length; k++) {
+                                    const element = booking[k];
+                                    timeFilter = element.initial;
+
+                                    //If the booking time coincides with the schedule we are evaluating
+                                    //and the booking date coincides with the range date of the user we are evaluating
+                                    //so, we accumulate its total variable
+                                    if (timeSchedule === element.initial && datefilter == element.date) {
+                                        acum += element.total;
+                                    }
+                                    capacity = element.capacity;
+                                }
+                                result.push({ total: acum, date: dateFilter, time: timeSchedule, capacity: item.capacity });
+                            });
+                        }
+                        // console.log(result);   
+                    }
+                    return result;
+                } catch (error) {
+                    throw new ApolloError("Bad Request", "400");
+                }
+            }
+        }
     }
 });
 

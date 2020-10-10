@@ -405,6 +405,17 @@ const ImageFile = new GraphQLObjectType({
     })
 });
 
+const AvailableType = new GraphQLObjectType({
+    name: "AvailableObject",
+    description: "Modelo Disponibilidad Reservas",
+    fields: () => ({
+        date: { type: GraphQLString },
+        time: { type: GraphQLString },
+        capacity: { type: GraphQLFloat },
+        total: { type: GraphQLFloat },
+    })
+});
+
 module.exports = {
     CountryType,
     DepartmentType,
@@ -418,5 +429,6 @@ module.exports = {
     CommercialLogin,
     ImageFile,
     WeekdayType,
-    CommercialPortfolioType
+    CommercialPortfolioType,
+    AvailableType
 };
