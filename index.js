@@ -35,7 +35,7 @@ const server = new ApolloServer({
 
         message: err.message,
         code: err.extensions.code,
-        stack: (process.env.NODE_ENV === 'production') ? err.extensions.exception.stacktrace : 'PRODUCTION'
+        stack: (process.env.NODE_ENV === 'production') ? 'PRODUCTION' : err.extensions.exception.stacktrace
     }),
     context: req => ({...req }),
 });

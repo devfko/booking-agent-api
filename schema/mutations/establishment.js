@@ -97,6 +97,7 @@ const editEstablishment = {
     async resolve(parent, args, context) {
 
         let verifiedToken = await validateToken.extractToken(context.req);
+        // console.log(verifiedToken);
 
         if (verifiedToken[0] !== undefined) {
 
@@ -143,7 +144,7 @@ const loginEstablishment = {
             if (userFinded) {
                 const token = jwt.sign({ _id: user[0]._id, email: user[0].email }, config.loginToken, { expiresIn: '1d' });
 
-                return { establishment: user[0].name, token };
+                return { establishment: user[0]._id, token };
             }
         }
 
@@ -164,7 +165,7 @@ const logoEstablishment = {
         commercialID: { type: GraphQLID },
     },
     async resolve(parent, args) {
-
+        console.log(args.file);
         const result = await cloudinaryStoreUpload(args.file, cloudinaryConfig.folderLogos);
         // console.log('path : ', result.path);
 
