@@ -29,7 +29,7 @@
         "graphql-type-decimal": "^1.0.0",
         "graphql-upload": "^11.0.0",
         "helmet": "^3.23.3",
-        "jsonwebtoken": "^8.5.1",
+        "jsonwebtoken": "^9.0.0",
         "moment": "^2.25.3",
         "mongoose": "^5.9.13",
         "mongoose-float": "^1.0.4",
